@@ -101,7 +101,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
       console.log('Sending payload:', payload);
 
       // Send the payload to the backend
-      const response = await axios.post('https://soil-3tik.onrender.com/soil/API/add_item.php', payload, {
+      const response = await axios.post('https://soil-3tik.onrender.com/API/add_item.php', payload, {
         headers: {
           'Content-Type': 'application/json',
         },

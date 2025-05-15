@@ -1,19 +1,17 @@
 <?php
-// Allow from any origin (or replace '*' with your specific frontend URL)
-$allowedOrigins = ['https://soil-indol.vercel.app'];
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_errors.log');
 
-// Check if the origin matches
-if (in_array($origin, $allowedOrigins)) {
-    header("Access-Control-Allow-Origin: $origin");
-    header('Access-Control-Allow-Credentials: true');
-    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization');
-}
+header("Access-Control-Allow-Origin: https://soil-indol.vercel.app");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Credentials: true");
+header('Content-Type: application/json');
 
-// Handle OPTIONS preflight request (CORS preflight)
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200); // Respond with 200 OK for preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit();
 }
 
