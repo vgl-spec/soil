@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farm Inventory Management System in React</title>
+        <style>
+      .site-header-fullwidth {
+        width: 100%;
+        background: linear-gradient(135deg, #8a9b6e 0%, #d4a762 50%, #6b8c85 100%);
+        box-shadow: 0 4px 12px rgba(58, 74, 61, 0.3);
+        border-bottom: 1px solid rgba(224, 230, 220, 0.8);
+        user-select: none;
+        color: white;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        padding: 12px 0 20px 0;
+      }
+
+
+      .site-header-content {
+        max-width: 1000px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        padding: 0 16px;
+      }
+
+
+      .site-header-content h1 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        line-height: 1.2;
+        text-align: left;
+        order: 1;
+        margin: 0;
+      }
+
+
+      .site-header-content .logos {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        max-width: 200px;
+        order: 0;
+      }
+
+
+      .site-header-content .logos img {
+        width: 40px;
+        height: auto;
+      }
+
+
+      footer {
+        background-color: #1d3b1f;
+        color: white;
+        padding: 20px 10px;
+        font-family: Arial, sans-serif;
+      }
+
+
+      .footer-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+
+      .footer-content > div {
+        margin-bottom: 10px;
+      }
+
+
+      .footer-bottom {
+        text-align: center;
+        font-size: 12px;
+        margin-top: 20px;
+      }
+
+
+      @media (min-width: 600px) {
+        .footer-content {
+          flex-direction: row;
+          justify-content: space-around;
+          text-align: left;
+          flex-wrap: wrap;
+        }
+
+
+        .footer-content > div {
+          margin-bottom: 0;
+        }
+      }
+
+
+      @media (max-width: 600px) {
+        .site-header-content h1 {
+          font-size: 18px;
+        }
+
+
+        .site-header-content .logos {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+        }
+
+
+        .site-header-content .logos img {
+          width: 30px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

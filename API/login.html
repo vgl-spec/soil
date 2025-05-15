@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>Login Test</h2>
+  <form id="loginForm">
+    <input name="username" placeholder="Username" value="operator1"><br>
+    <input name="password" type="password" placeholder="Password" value="op123"><br>
+    <button type="submit">Login</button>
+  </form>
+  <pre id="result"></pre>
+
+  <script>
+    document.getElementById("loginForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const res = await fetch("http://localhost/Test/API/login.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: form.username.value,
+          password: form.password.value
+        })
+      });
+      const data = await res.json();
+      document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+    };
+  </script>
+</body>
+</html>
