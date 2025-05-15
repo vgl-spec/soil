@@ -1,8 +1,9 @@
 <?php
-// Proper CORS handling for your frontend domain
+// Allow from any origin (or replace '*' with your specific frontend URL)
 $allowedOrigins = ['https://soil-indol.vercel.app'];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
+// Check if the origin matches
 if (in_array($origin, $allowedOrigins)) {
     header("Access-Control-Allow-Origin: $origin");
     header('Access-Control-Allow-Credentials: true');
@@ -10,9 +11,9 @@ if (in_array($origin, $allowedOrigins)) {
     header('Access-Control-Allow-Headers: Content-Type, Authorization');
 }
 
-// Handle OPTIONS preflight request
+// Handle OPTIONS preflight request (CORS preflight)
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
+    http_response_code(200); // Respond with 200 OK for preflight
     exit();
 }
 
@@ -29,13 +30,19 @@ if (!$conn) {
 
 // Read input once and log raw input for debugging
 $rawInput = file_get_contents("php://input");
-error_log("Raw input received: " . $rawInput);
+error_log("Raw input received: " . $rawInput);  // Log the raw input data
+
+// Check if the input is empty
+if (empty($rawInput)) {
+    echo json_encode(["success" => false, "message" => "No input received"]);
+    exit;
+}
 
 // Decode JSON input
 $data = json_decode($rawInput, true);
 if (!$data) {
     error_log("JSON decoding failed.");
-    echo json_encode(["success" => false, "message" => "Invalid JSON"]);
+    echo json_encode(["success" => false, "message" => "Invalid JSON", "raw_input" => $rawInput]);  // Include raw input in the response for debugging
     exit;
 }
 
@@ -54,7 +61,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($user = $result->fetch_assoc()) {
-    // If you store hashed passwords, use password_verify($password, $user['password'])
+    // Directly compare passwords without hashing
     if ($user['password'] === $password) {
         $_SESSION['user'] = $user;
 
