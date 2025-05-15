@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/login.php': {
-        target: 'http://Test/API',
+        target: 'http://localhost:8012/Test/API',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/login\.php/, '/login.php'),
       
