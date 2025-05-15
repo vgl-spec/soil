@@ -1,24 +1,24 @@
 <?php
-// Allow from any origin (or replace '*' with your specific frontend URL)
-if (isset($_SERVER['https://soil-indol.vercel.app'])) {
-    // You can whitelist specific origins like 'https://soil-indol.vercel.app' here if needed
-    header("Access-Control-Allow-Origin: {$_SERVER['https://soil-indol.vercel.app']}");
+$allowedOrigins = ['https://soil-indol.vercel.app'];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+if (in_array($origin, $allowedOrigins)) {
+    header("Access-Control-Allow-Origin: $origin");
     header('Access-Control-Allow-Credentials: true');
     header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type, Authorization');
 }
 
-// Handle OPTIONS requests (preflight)
+// Handle OPTIONS preflight request
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    // Respond with 200 OK and exit early for preflight
     http_response_code(200);
     exit();
 }
 
-
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
 include 'db.php';
 
 if (!$conn) {
@@ -26,13 +26,18 @@ if (!$conn) {
     exit;
 }
 
-$data = json_decode(file_get_contents("php://input"), true);
-error_log("Raw input received: " . file_get_contents("php://input")); // Debug log
+// Read input once and log raw input for debugging
+$rawInput = file_get_contents("php://input");
+error_log("Raw input received: " . $rawInput);
+
+// Decode JSON input
+$data = json_decode($rawInput, true);
 if (!$data) {
-    error_log("JSON decoding failed."); // Debug log
+    error_log("JSON decoding failed.");
     echo json_encode(["success" => false, "message" => "Invalid JSON"]);
     exit;
 }
+
 $username = $data['username'] ?? '';
 $password = $data['password'] ?? '';
 
@@ -51,9 +56,11 @@ if ($user = $result->fetch_assoc()) {
     // If you store hashed passwords, use password_verify($password, $user['password'])
     if ($user['password'] === $password) {
         $_SESSION['user'] = $user;
+
         $log = $conn->prepare("INSERT INTO action_logs (user_id, action_type, description) VALUES (?, 'login', 'User logged in')");
         $log->bind_param("i", $user['id']);
         $log->execute();
+
         echo json_encode(["success" => true, "role" => $user['role'], "id" => $user['id']]);
     } else {
         echo json_encode(["success" => false, "message" => "Invalid password"]);
