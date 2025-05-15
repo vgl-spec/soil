@@ -1,15 +1,17 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/php_errors.log');
+ini_set('display_errors', 0);  // Turn off display errors in production
+ini_set('log_errors', 1);  // Enable logging
+ini_set('error_log', __DIR__ . '/php_errors.log');  // Log errors to a file
 
+// Set headers for CORS
 header("Access-Control-Allow-Origin: https://soil-indol.vercel.app");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
 
+// Handle OPTIONS preflight request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -18,11 +20,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 try {
     include_once 'db.php';
 
+    // Check the database connection
     if ($conn->connect_error) {
         throw new Exception("Connection failed: " . $conn->connect_error);
     }
 
-    // Create item_history table if it doesn't exist
+    // Create item_history table if it doesn't exist (ensure this only runs once)
     $createTable = "CREATE TABLE IF NOT EXISTS item_history (
         id INT AUTO_INCREMENT PRIMARY KEY,
         predefined_item_id INT,
@@ -33,7 +36,7 @@ try {
         harvest_date DATE,
         FOREIGN KEY (predefined_item_id) REFERENCES predefined_items(id)
     )";
-    
+
     if (!$conn->query($createTable)) {
         throw new Exception("Failed to create item_history table: " . $conn->error);
     }
@@ -127,8 +130,9 @@ try {
     ]);
 
 } catch (Exception $e) {
+    // Log the exception and return a JSON response with the error
     error_log("API Error: " . $e->getMessage());
-    http_response_code(500);
+    http_response_code(500);  // Internal server error
     echo json_encode([
         "error" => true,
         "message" => $e->getMessage(),
@@ -136,5 +140,5 @@ try {
     ]);
 }
 
-$conn->close();
+$conn->close();  // Always close the connection
 ?>
