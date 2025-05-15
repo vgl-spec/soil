@@ -1,4 +1,5 @@
 <?php
+// Proper CORS handling for your frontend domain
 $allowedOrigins = ['https://soil-indol.vercel.app'];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
@@ -29,21 +30,6 @@ if (!$conn) {
 // Read input once and log raw input for debugging
 $rawInput = file_get_contents("php://input");
 error_log("Raw input received: " . $rawInput);
-
-fetch('https://soil-3tik.onrender.com/API/login.php', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        username: 'testuser',
-        password: 'testpassword'
-    })
-})
-.then(response => response.json())
-.then(data => console.log(data))
-.catch(error => console.log('Error:', error));
-
 
 // Decode JSON input
 $data = json_decode($rawInput, true);
@@ -84,4 +70,3 @@ if ($user = $result->fetch_assoc()) {
     echo json_encode(["success" => false, "message" => "User not found"]);
 }
 ?>
-
