@@ -46,6 +46,9 @@ try {
     ORDER BY i.created_at DESC
     ";
 
+    // Log the query for debugging
+    error_log("Items query: " . $query);
+
     $result = $conn->query($query);
     if (!$result) {
         throw new Exception("Items query failed: " . $conn->error);
@@ -83,6 +86,9 @@ try {
     INNER JOIN predefined_items p ON h.predefined_item_id = p.id
     ORDER BY h.date DESC
     ";
+
+    // Log the query for debugging
+    error_log("History query: " . $historyQuery);
 
     $historyResult = $conn->query($historyQuery);
     if (!$historyResult) {
