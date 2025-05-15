@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <body>
-  <h2>Login Test</h2>
+  <h2>Login soil</h2>
   <form id="loginForm">
     <input name="username" placeholder="Username" value="operator1"><br>
     <input name="password" type="password" placeholder="Password" value="op123"><br>
@@ -13,7 +13,7 @@
     document.getElementById("loginForm").onsubmit = async (e) => {
       e.preventDefault();
       const form = e.target;
-      const res = await fetch("https://soil-3tik.onrender.com/Test/API/login.php", {
+      const res = await fetch("https://soil-3tik.onrender.com/soil/API/login.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

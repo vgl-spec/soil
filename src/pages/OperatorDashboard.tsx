@@ -29,7 +29,7 @@ const OperatorDashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("https://soil-3tik.onrender.com/Test/API/categories.php");
+        const res = await axios.get("https://soil-3tik.onrender.com/soil/API/categories.php");
         const json = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
         setCategories(json);
       } catch (error) {
@@ -42,7 +42,7 @@ const OperatorDashboard: React.FC = () => {
   // Fetch items and history from backend
   const fetchItems = async () => {
     try {
-      const res = await axios.get("https://soil-3tik.onrender.com/Test/API/items.php");
+      const res = await axios.get("https://soil-3tik.onrender.com/soil/API/items.php");
       console.log('API Response:', res.data);
       const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
       

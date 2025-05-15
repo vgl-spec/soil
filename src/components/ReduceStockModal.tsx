@@ -70,7 +70,7 @@ const ReduceStockModal: React.FC<ReduceStockModalProps> = ({ item, onClose, onRe
     console.log("Payload being sent:", payload);
 
     // API call to reduce stock and update the database
-    axios.post('https://soil-3tik.onrender.com/Test/API/reduce_stock.php', payload, {
+    axios.post('https://soil-3tik.onrender.com/soil/API/reduce_stock.php', payload, {
       headers: {
         'Content-Type': 'application/json',
       },

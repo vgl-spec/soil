@@ -15,7 +15,7 @@ const SupervisorDashboard: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
   useEffect(() => {
-    axios.get("https://soil-3tik.onrender.com/Test/API/logs.php")
+    axios.get("https://soil-3tik.onrender.com/soil/API/logs.php")
       .then(res => setLogs(res.data))
       .catch(err => console.error(err));
   }, []);

@@ -19,7 +19,7 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      const response = await axios.post("https://soil-3tik.onrender.com/Test/API/register.php", form, {
+      const response = await axios.post("https://soil-3tik.onrender.com/soil/API/register.php", form, {
         headers: { "Content-Type": "application/json" }
       });
 

@@ -55,7 +55,7 @@ export const checkItemExists = async (
       console.log("Sending parameters: ", { name, mainCatID, subCatID });
       // Make the API request with numeric IDs for main_category_id and subcategory_id
 
-      const response = await axios.get('https://soil-3tik.onrender.com/Test/API/check_item_exists.php', {
+      const response = await axios.get('https://soil-3tik.onrender.com/soil/API/check_item_exists.php', {
   params: {
     name,
     main_category_id: mainCategoryId,
@@ -138,9 +138,9 @@ export const getConsolidatedInventory = (
 };
 
 // Utility functions that don't require database access
-export const formatDate = (dateString: string | null): string => {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString();
+export const formatDate = (datestring: string | null): string => {
+  if (!datestring) return "-";
+  return new Date(datestring).toLocaleDateString();
 };
 
 export const generateId = (): number => {
