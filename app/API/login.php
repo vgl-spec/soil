@@ -30,6 +30,21 @@ if (!$conn) {
 $rawInput = file_get_contents("php://input");
 error_log("Raw input received: " . $rawInput);
 
+fetch('https://soil-3tik.onrender.com/API/login.php', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        username: 'testuser',
+        password: 'testpassword'
+    })
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.log('Error:', error));
+
+
 // Decode JSON input
 $data = json_decode($rawInput, true);
 if (!$data) {
