@@ -25,22 +25,6 @@ try {
         throw new Exception("Connection failed: " . $conn->connect_error);
     }
 
-    // Create item_history table if it doesn't exist (ensure this only runs once)
-    $createTable = "CREATE TABLE IF NOT EXISTS item_history (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        predefined_item_id INT,
-        quantity INT,
-        notes VARCHAR(255),
-        change_type ENUM('add', 'reduce', 'increase'),
-        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        harvest_date DATE,
-        FOREIGN KEY (predefined_item_id) REFERENCES predefined_items(id)
-    )";
-
-    if (!$conn->query($createTable)) {
-        throw new Exception("Failed to create item_history table: " . $conn->error);
-    }
-
     // First query: Get current inventory state
     $query = "
     SELECT 
