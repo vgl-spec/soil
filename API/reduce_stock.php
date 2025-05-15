@@ -1,15 +1,20 @@
 <?php
-// filepath: c:\xampp\htdocs\Test\API\reduce_stock.php
+// Allow from any origin (or replace '*' with your specific frontend URL)
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+    // You can whitelist specific origins like 'https://soil-indol.vercel.app' here if needed
+    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+}
 
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Allow-Credentials: true");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+// Handle OPTIONS requests (preflight)
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    // Respond with 200 OK and exit early for preflight
     http_response_code(200);
     exit();
 }
+
 
 session_start();
 error_reporting(E_ALL);
