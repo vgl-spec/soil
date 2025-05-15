@@ -9,7 +9,7 @@ interface AddItemModalProps {
   onClose: () => void;
   onAddItem: (entry: HistoryEntry) => void;
 }
-
+const API_BASE = 'https://soil-3tik.onrender.com/API/';
 const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddItem }) => {
   const transformedCategories: Category = categories || {};
 
