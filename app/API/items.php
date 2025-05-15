@@ -47,7 +47,7 @@ try {
     ";
 
     // Log the query for debugging
-    error_log("Items query: " . $query);
+    error_log("Executing query: " . $query);
 
     $result = $conn->query($query);
     if (!$result) {
@@ -88,7 +88,7 @@ try {
     ";
 
     // Log the query for debugging
-    error_log("History query: " . $historyQuery);
+    error_log("Executing history query: " . $historyQuery);
 
     $historyResult = $conn->query($historyQuery);
     if (!$historyResult) {
@@ -131,5 +131,4 @@ try {
 }
 
 $conn->close();  // Always close the connection
-//
 ?>
