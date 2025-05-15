@@ -31,8 +31,9 @@ try {
         i.id,
         i.predefined_item_id,
         i.quantity,
+        -- Ensure valid date handling for '0000-00-00'
         CASE 
-            WHEN i.harvest_date = '0000-00-00' OR i.harvest_date IS NULL THEN NULL
+            WHEN i.harvest_date = '0000-00-00' THEN NULL
             ELSE i.harvest_date
         END as harvest_date,
         i.created_at,
@@ -56,6 +57,11 @@ try {
 
     $items = [];
     while ($row = $result->fetch_assoc()) {
+        // Log any row with invalid date for debugging
+        if ($row['harvest_date'] === '0000-00-00') {
+            error_log("Found invalid date for item ID " . $row['id']);
+        }
+
         $items[] = [
             "id" => (int)$row['id'],
             "predefined_item_id" => (int)$row['predefined_item_id'],
