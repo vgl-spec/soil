@@ -26,33 +26,32 @@ try {
     }
 
     // First query: Get current inventory state
-    $$query = "
-SELECT 
-    i.id,
-    i.predefined_item_id,
-    i.quantity,
-    -- Handle invalid '0000-00-00' as NULL
-    CASE 
-        WHEN i.harvest_date = '0000-00-00' OR i.harvest_date IS NULL THEN NULL
-        ELSE i.harvest_date
-    END as harvest_date,
-    i.created_at,
-    i.updated_at,
-    p.name,
-    p.unit,
-    p.main_category_id as mainCategory,
-    p.subcat_id as subcategory
-FROM items i
-INNER JOIN predefined_items p ON i.predefined_item_id = p.id
-ORDER BY i.created_at DESC
-";
-
+    $query = "
+    SELECT 
+        i.id,
+        i.predefined_item_id,
+        i.quantity,
+        CASE 
+            WHEN i.harvest_date = '0000-00-00' OR i.harvest_date IS NULL THEN NULL
+            ELSE i.harvest_date
+        END as harvest_date,
+        i.created_at,
+        i.updated_at,
+        p.name,
+        p.unit,
+        p.main_category_id as mainCategory,
+        p.subcat_id as subcategory
+    FROM items i
+    INNER JOIN predefined_items p ON i.predefined_item_id = p.id
+    ORDER BY i.created_at DESC
+    ";
 
     // Log the query for debugging
     error_log("Executing query: " . $query);
 
     $result = $conn->query($query);
     if (!$result) {
+        error_log("Query failed: " . $conn->error);
         throw new Exception("Items query failed: " . $conn->error);
     }
 
