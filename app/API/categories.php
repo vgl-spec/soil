@@ -6,9 +6,12 @@ header("Content-Type: application/json");
 
 require_once "db.php";
 
-try {
+// Check if output buffering is active before cleaning
+if (ob_get_level()) {
     ob_clean();
+}
 
+try {
     // Fetch Main Categories
     $mainQuery = "SELECT * FROM categories";
     $mainResult = $conn->query($mainQuery);
