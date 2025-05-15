@@ -1,8 +1,8 @@
 <?php
 // Allow from any origin (or replace '*' with your specific frontend URL)
-if (isset($_SERVER['HTTP_ORIGIN'])) {
+if (isset($_SERVER['https://soil-indol.vercel.app'])) {
     // You can whitelist specific origins like 'https://soil-indol.vercel.app' here if needed
-    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+    header("Access-Control-Allow-Origin: {$_SERVER['https://soil-indol.vercel.app']}");
     header('Access-Control-Allow-Credentials: true');
     header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type, Authorization');

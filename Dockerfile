@@ -4,7 +4,7 @@ FROM php:8.2-cli
 RUN docker-php-ext-install mysqli
 
 # Copy your app files
-COPY . /app
+COPY app /app
 
 WORKDIR /app
 

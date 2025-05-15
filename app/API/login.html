@@ -13,7 +13,7 @@
     document.getElementById("loginForm").onsubmit = async (e) => {
       e.preventDefault();
       const form = e.target;
-      const res = await fetch("https://soil-3tik.onrender.com/soil/API/login.php", {
+      const res = await fetch("https://soil-3tik.onrender.com/API/login.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
