@@ -55,7 +55,7 @@ export const checkItemExists = async (
       console.log("Sending parameters: ", { name, mainCatID, subCatID });
       // Make the API request with numeric IDs for main_category_id and subcategory_id
 
-      const response = await axios.get('http://localhost:8012/Test/API/check_item_exists.php', {
+      const response = await axios.get('https://soil-3tik.onrender.com/Test/API/check_item_exists.php', {
   params: {
     name,
     main_category_id: mainCategoryId,

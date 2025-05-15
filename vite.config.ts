@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/login.php': {
-        target: 'http://localhost:8012/Test/API',
+        target: 'https://soil-3tik.onrender.com/Test/API',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/login\.php/, '/login.php'),
       

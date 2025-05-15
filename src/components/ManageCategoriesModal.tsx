@@ -68,7 +68,7 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
         unit,
       });
       const response = await axios.post(
-        "http://localhost:8012/Test/API/add_subcategory.php",
+        "https://soil-3tik.onrender.com/Test/API/add_subcategory.php",
         {
           main_category_id,
           name,
@@ -162,7 +162,7 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
         unit,
       });
       const response = await axios.post(
-        "http://localhost:8012/Test/API/add_predefined_item.php",
+        "https://soil-3tik.onrender.com/Test/API/add_predefined_item.php",
         {
           main_category_id,
           subcat_id,

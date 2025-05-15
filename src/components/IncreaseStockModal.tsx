@@ -71,7 +71,7 @@ const IncreaseStockModal: React.FC<IncreaseStockModalProps> = ({ item, onClose, 
     console.log("Payload being sent:", payload);
 
     // API call to increase stock and update the database
-    axios.post('http://localhost:8012/Test/API/increase_stock.php', payload)
+    axios.post('https://soil-3tik.onrender.com/Test/API/increase_stock.php', payload)
       .then(() => {
         onIncreaseStock(historyEntry);
         onClose();
