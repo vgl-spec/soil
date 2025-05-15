@@ -32,7 +32,7 @@ try {
         i.predefined_item_id,
         i.quantity,
         CASE 
-            WHEN i.harvest_date = OR i.harvest_date IS NULL THEN NULL
+            WHEN i.harvest_date = '0000-00-00' OR i.harvest_date IS NULL THEN NULL
             ELSE i.harvest_date
         END as harvest_date,
         i.created_at,
