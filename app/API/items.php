@@ -1,22 +1,32 @@
 <?php
+// Enable full error reporting and display for debugging - remove or disable in production
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-ini_set('display_errors', 0);  // Turn off display errors in production
-ini_set('log_errors', 1);  // Enable logging
-ini_set('error_log', __DIR__ . '/php_errors.log');  // Log errors to a file
 
-// Set headers for CORS
+// Log errors to a file
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_errors.log');
+
+// Set headers for CORS with dynamic origin whitelist
 $allowed_origins = [
     'https://soil-indol.vercel.app',
     'https://soil-3tik.onrender.com',
-    // add your frontend domains here
+    // add your other allowed frontend domains here
 ];
 
-if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowed_origins)) {
-    header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
-    header("Access-Control-Allow-Credentials: true");
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+    if (in_array($_SERVER['HTTP_ORIGIN'], $allowed_origins)) {
+        header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+        header("Access-Control-Allow-Credentials: true");
+    } else {
+        header('HTTP/1.1 403 Forbidden');
+        error_log("CORS error: Origin not allowed - " . $_SERVER['HTTP_ORIGIN']);
+        exit('Origin not allowed');
+    }
 } else {
-    header('HTTP/1.1 403 Forbidden');
-    exit('Origin not allowed');
+    // Optional: handle requests without Origin header
+    // header("Access-Control-Allow-Origin: *"); // or do nothing
 }
 
 header("Access-Control-Allow-Methods: GET, OPTIONS");
@@ -29,13 +39,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+// Debug log before DB connection
+error_log("Starting items.php script");
+
 try {
     include_once 'db.php';
+    error_log("Included db.php");
 
-    // Check the database connection
+    // Check DB connection
     if ($conn->connect_error) {
+        error_log("DB Connection Error: " . $conn->connect_error);
         throw new Exception("Connection failed: " . $conn->connect_error);
     }
+    error_log("DB connected successfully");
 
     // First query: Get current inventory state
     $query = "
@@ -58,14 +74,14 @@ try {
     ORDER BY i.created_at DESC
     ";
 
-    // Log the query for debugging
     error_log("Executing query: " . $query);
-
     $result = $conn->query($query);
+
     if (!$result) {
         error_log("Query failed: " . $conn->error);
         throw new Exception("Items query failed: " . $conn->error);
     }
+    error_log("First query executed successfully");
 
     $items = [];
     while ($row = $result->fetch_assoc()) {
@@ -80,6 +96,7 @@ try {
             "harvestDate" => $row['harvest_date'] ? date('Y-m-d', strtotime($row['harvest_date'])) : null
         ];
     }
+    error_log("Fetched " . count($items) . " items");
 
     // Second query: Get full history
     $historyQuery = "
@@ -100,14 +117,14 @@ try {
     ORDER BY h.date DESC
     ";
 
-    // Log the query for debugging
     error_log("Executing history query: " . $historyQuery);
-
     $historyResult = $conn->query($historyQuery);
+
     if (!$historyResult) {
         error_log("History query error: " . $conn->error);
         throw new Exception("History query failed: " . $conn->error);
     }
+    error_log("Second query executed successfully");
 
     $history = [];
     while ($row = $historyResult->fetch_assoc()) {
@@ -125,17 +142,17 @@ try {
             "date" => $row['date']
         ];
     }
+    error_log("Fetched " . count($history) . " history records");
 
-    // Return both current inventory and full history
+    // Output JSON response
     echo json_encode([
         "items" => $items,
         "history" => $history
     ]);
 
 } catch (Exception $e) {
-    // Log the exception and return a JSON response with the error
     error_log("API Error: " . $e->getMessage());
-    http_response_code(500);  // Internal server error
+    http_response_code(500);
     echo json_encode([
         "error" => true,
         "message" => $e->getMessage(),
@@ -143,5 +160,11 @@ try {
     ]);
 }
 
-$conn->close();  // Always close the connection
+// Close DB connection
+if (isset($conn)) {
+    $conn->close();
+    error_log("DB connection closed");
+}
+
+error_log("Finished items.php script");
 ?>
