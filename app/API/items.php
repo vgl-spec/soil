@@ -5,10 +5,22 @@ ini_set('log_errors', 1);  // Enable logging
 ini_set('error_log', __DIR__ . '/php_errors.log');  // Log errors to a file
 
 // Set headers for CORS
-header("Access-Control-Allow-Origin: https://soil-indol.vercel.app");
+$allowed_origins = [
+    'https://soil-indol.vercel.app',
+    'https://soil-3tik.onrender.com',
+    // add your frontend domains here
+];
+
+if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowed_origins)) {
+    header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+    header("Access-Control-Allow-Credentials: true");
+} else {
+    header('HTTP/1.1 403 Forbidden');
+    exit('Origin not allowed');
+}
+
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
 
 // Handle OPTIONS preflight request
