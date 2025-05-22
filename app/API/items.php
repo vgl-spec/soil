@@ -54,7 +54,7 @@ SELECT
     i.id,
     i.predefined_item_id,
     i.quantity,
-    STR_TO_DATE(NULLIF(i.harvest_date, '0000-00-00'), '%Y-%m-%d') AS harvest_date,
+    STR_TO_DATE(NULLIF(CAST(i.harvest_date AS CHAR), '0000-00-00'), '%Y-%m-%d') AS harvest_date,
     i.created_at,
     i.updated_at,
     p.name,
@@ -98,7 +98,7 @@ SELECT
     h.notes,
     h.change_type,
     h.date,
-    STR_TO_DATE(NULLIF(h.harvest_date, '0000-00-00'), '%Y-%m-%d') AS harvest_date,
+    STR_TO_DATE(NULLIF(CAST(h.harvest_date AS CHAR), '0000-00-00'), '%Y-%m-%d') AS harvest_date,
     p.name,
     p.unit,
     p.main_category_id AS mainCategory,
@@ -106,7 +106,6 @@ SELECT
 FROM item_history h
 INNER JOIN predefined_items p ON h.predefined_item_id = p.id
 ORDER BY h.date DESC;
-
     ";
 
     error_log("Executing history query: " . $historyQuery);
