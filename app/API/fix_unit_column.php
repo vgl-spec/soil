@@ -1,12 +1,19 @@
 <?php
 include 'db.php';
+header('Content-Type: application/json');
 
-// ALTER the 'unit' column in predefined_items to allow 'Kg' and 'pcs'
-$sql = "ALTER TABLE predefined_items MODIFY unit ENUM('Kg', 'pcs')";
-
-if ($conn->query($sql) === TRUE) {
-    echo json_encode(['success' => true, 'message' => "Column updated successfully."]);
-} else {
-    echo json_encode(['success' => false, 'message' => $conn->error]);
+// Step 1: Update any invalid values in the `unit` column
+$update = "UPDATE predefined_items SET unit = 'Kg' WHERE unit = 'Kgs'";
+if (!$conn->query($update)) {
+    echo json_encode(['success' => false, 'step' => 1, 'message' => $conn->error]);
+    exit;
 }
-?>
+
+// Step 2: Modify the `unit` column to ENUM('Kg', 'pcs')
+$alter = "ALTER TABLE predefined_items MODIFY unit ENUM('Kg', 'pcs')";
+if (!$conn->query($alter)) {
+    echo json_encode(['success' => false, 'step' => 2, 'message' => $conn->error]);
+    exit;
+}
+
+echo json_encode(['success' => true, 'message' => 'Unit column successfully updated.']);
