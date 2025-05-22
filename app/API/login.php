@@ -1,9 +1,12 @@
 <?php
-// Allow from any origin (or replace '*' with your specific frontend URL)
+// Allow from specific origins
 $allowedOrigins = ['https://soil-indol.vercel.app'];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
-header("Access-Control-Allow-Origin: $origin");
+if (in_array($origin, $allowedOrigins)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
+
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Credentials: true");
@@ -12,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -37,7 +41,7 @@ if (empty($rawInput)) {
 $data = json_decode($rawInput, true);
 if (!$data) {
     error_log("JSON decoding failed.");
-    echo json_encode(["success" => false, "message" => "Invalid JSON", "raw_input" => $rawInput]);  // Include raw input in the response for debugging
+    echo json_encode(["success" => false, "message" => "Invalid JSON", "raw_input" => $rawInput]);
     exit;
 }
 
@@ -56,8 +60,8 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($user = $result->fetch_assoc()) {
-    // Directly compare passwords without hashing
-    if ($user['password'] === $password) {
+    // ✅ Secure password comparison using password_verify
+    if (password_verify($password, $user['password'])) {
         $_SESSION['user'] = $user;
 
         $log = $conn->prepare("INSERT INTO action_logs (user_id, action_type, description) VALUES (?, 'login', 'User logged in')");
