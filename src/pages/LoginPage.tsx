@@ -25,23 +25,34 @@ const LoginPage: React.FC = () => {
 };  
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
-      <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-full max-w-sm space-y-4">
-        <h2 className="text-xl font-semibold text-center">Login</h2>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <input type="text" placeholder="Username" value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="w-full p-2 border rounded"
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="w-full max-w-sm rounded-lg shadow-lg relative">
+        {/* Translucent background layer */}
+        <div
+          className="absolute inset-0 rounded-lg"
+          style={{ background: "rgba(255, 255, 255, 0.45)", zIndex: 0, backdropFilter: "blur(8px)" }}
+          aria-hidden="true"
         />
-        <input type="password" placeholder="Password" value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border rounded"
-        />
-        <button type="submit" className="w-full bg-green-700 text-white p-2 rounded">Login</button>
-        <p className="text-sm text-center">
-          No account? <Link to="/register" className="text-green-700 underline">Register here</Link>
-        </p>
-      </form>
+        {/* Content layer */}
+        <div className="relative z-10 p-6">
+          <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-full max-w-sm space-y-4">
+            <h2 className="text-xl font-semibold text-center">Login</h2>
+            {error && <p className="text-red-600 text-sm">{error}</p>}
+            <input type="text" placeholder="Username" value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <input type="password" placeholder="Password" value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <button type="submit" className="w-full bg-green-700 text-white p-2 rounded">Login</button>
+            <p className="text-sm text-center">
+              No account? <Link to="/register" className="text-green-700 underline">Register here</Link>
+            </p>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };
