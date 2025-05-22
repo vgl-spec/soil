@@ -1,14 +1,14 @@
 <?php
-// Enable full error reporting and display for debugging - remove or disable in production
+// Enable error reporting for debugging - keep off in production
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Log errors to a file
+// Log errors to file
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/php_errors.log');
 
-// Set headers for CORS with dynamic origin whitelist
+// CORS headers with allowed origins
 $allowed_origins = [
     'https://soil-indol.vercel.app',
     'https://soil-3tik.onrender.com',
@@ -24,36 +24,31 @@ if (isset($_SERVER['HTTP_ORIGIN'])) {
         error_log("CORS error: Origin not allowed - " . $_SERVER['HTTP_ORIGIN']);
         exit('Origin not allowed');
     }
-} else {
-    // Optional: handle requests without Origin header
-    // header("Access-Control-Allow-Origin: *"); // or do nothing
 }
 
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header('Content-Type: application/json');
 
-// Handle OPTIONS preflight request
+// Handle OPTIONS preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// Debug log before DB connection
 error_log("Starting items.php script");
 
 try {
     include_once 'db.php';
     error_log("Included db.php");
 
-    // Check DB connection
     if ($conn->connect_error) {
         error_log("DB Connection Error: " . $conn->connect_error);
         throw new Exception("Connection failed: " . $conn->connect_error);
     }
     error_log("DB connected successfully");
 
-    // First query: Get current inventory state
+    // Query current inventory with CASE for invalid dates
     $query = "
     SELECT 
         i.id,
@@ -76,7 +71,6 @@ try {
 
     error_log("Executing query: " . $query);
     $result = $conn->query($query);
-
     if (!$result) {
         error_log("Query failed: " . $conn->error);
         throw new Exception("Items query failed: " . $conn->error);
@@ -98,7 +92,7 @@ try {
     }
     error_log("Fetched " . count($items) . " items");
 
-    // Second query: Get full history
+    // Query full history - add CASE to handle '0000-00-00' dates here too
     $historyQuery = "
     SELECT 
         h.id,
@@ -107,7 +101,10 @@ try {
         h.notes,
         h.change_type,
         h.date,
-        h.harvest_date,    
+        CASE
+            WHEN h.harvest_date = '0000-00-00' OR h.harvest_date IS NULL THEN NULL
+            ELSE h.harvest_date
+        END as harvest_date,
         p.name,
         p.unit,
         p.main_category_id AS mainCategory,
@@ -119,7 +116,6 @@ try {
 
     error_log("Executing history query: " . $historyQuery);
     $historyResult = $conn->query($historyQuery);
-
     if (!$historyResult) {
         error_log("History query error: " . $conn->error);
         throw new Exception("History query failed: " . $conn->error);
@@ -128,6 +124,7 @@ try {
 
     $history = [];
     while ($row = $historyResult->fetch_assoc()) {
+        // harvest_date is already NULL if invalid due to CASE in SQL
         $history[] = [
             "id" => (int)$row['id'],
             "predefined_item_id" => (int)$row['predefined_item_id'],
@@ -136,7 +133,7 @@ try {
             "subcategory" => $row['subcategory'],
             "quantity" => (int)$row['quantity'],
             "unit" => $row['unit'],
-            "harvestDate" => $row['harvest_date'] ?? null,
+            "harvestDate" => $row['harvest_date'],  // will be NULL if invalid
             "notes" => $row['notes'] ?? "",
             "changeType" => $row['change_type'],
             "date" => $row['date']
@@ -144,7 +141,6 @@ try {
     }
     error_log("Fetched " . count($history) . " history records");
 
-    // Output JSON response
     echo json_encode([
         "items" => $items,
         "history" => $history
@@ -160,7 +156,6 @@ try {
     ]);
 }
 
-// Close DB connection
 if (isset($conn)) {
     $conn->close();
     error_log("DB connection closed");
