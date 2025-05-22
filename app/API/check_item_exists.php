@@ -1,8 +1,34 @@
 <?php
-header("Access-Control-Allow-Origin: https://soil-indol.vercel.app"); // Set to your frontend origin
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Credentials: true");
+// Enable error reporting for debugging - keep off in production
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Log errors to file
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_errors.log');
+
+// Allowed CORS origins
+$allowed_origins = [
+    'https://soil-indol.vercel.app',
+    'https://soil-3tik.onrender.com',
+    // add your other allowed frontend domains here
+];
+
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+    if (in_array($_SERVER['HTTP_ORIGIN'], $allowed_origins)) {
+        header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+        header("Access-Control-Allow-Credentials: true");
+    } else {
+        header('HTTP/1.1 403 Forbidden');
+        error_log("CORS error: Origin not allowed - " . $_SERVER['HTTP_ORIGIN']);
+        exit('Origin not allowed');
+    }
+}
+
+header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
