@@ -26,7 +26,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="w-full max-w-sm rounded-lg shadow-lg relative">
+      <div className="w-full max-w-[100vh] rounded-lg shadow-lg relative">
         {/* Translucent background layer */}
         <div
           className="absolute inset-0 rounded-lg"
