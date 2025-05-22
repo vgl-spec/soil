@@ -210,7 +210,7 @@ const UserView: React.FC = () => {
     fetchItems();
   }, []);
 
-  return (
+    return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
       <div className="w-full max-w-6xl rounded-lg shadow-lg relative">
         {/* Translucent background layer */}

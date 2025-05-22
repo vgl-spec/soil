@@ -48,7 +48,7 @@ const LoginPage: React.FC = () => {
             />
             <button type="submit" className="w-full bg-green-700 text-white p-2 rounded">Login</button>
             <p className="text-sm text-center">
-              No accoun123t? <Link to="/register" className="text-green-700 underline">Register here</Link>
+              No account? <Link to="/register" className="text-green-700 underline">Register here</Link>
             </p>
           </form>
         </div>
