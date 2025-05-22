@@ -50,20 +50,23 @@ try {
 
     // Query current inventory with NULLIF to avoid invalid dates
     $query = "
-        SELECT
-            i.id,
-            i.predefined_item_id,
-            i.quantity,
-            NULLIF(i.harvest_date, '0000-00-00') AS harvest_date,
-            i.created_at,
-            i.updated_at,
-            p.name,
-            p.unit,
-            p.main_category_id as mainCategory,
-            p.subcat_id as subcategory
-        FROM items i
-        INNER JOIN predefined_items p ON i.predefined_item_id = p.id
-        ORDER BY i.created_at DESC
+SELECT
+    i.id,
+    i.predefined_item_id,
+    i.quantity,
+    CASE
+        WHEN i.harvest_date = '0000-00-00' THEN NULL
+        ELSE STR_TO_DATE(i.harvest_date, '%Y-%m-%d')
+    END as harvest_date,
+    i.created_at,
+    i.updated_at,
+    p.name,
+    p.unit,
+    p.main_category_id as mainCategory,
+    p.subcat_id as subcategory
+FROM items i
+INNER JOIN predefined_items p ON i.predefined_item_id = p.id
+ORDER BY i.created_at DESC
     ";
 
     error_log("Executing query: " . $query);
@@ -92,20 +95,24 @@ try {
     // Query full history
     $historyQuery = "
     SELECT
-        h.id,
-        h.predefined_item_id,
-        h.quantity,
-        h.notes,
-        h.change_type,
-        h.date,
-        NULLIF(h.harvest_date, '0000-00-00') AS harvest_date,
-        p.name,
-        p.unit,
-        p.main_category_id AS mainCategory,
-        p.subcat_id AS subcategory
-    FROM item_history h
-    INNER JOIN predefined_items p ON h.predefined_item_id = p.id
-    ORDER BY h.date DESC
+    h.id,
+    h.predefined_item_id,
+    h.quantity,
+    h.notes,
+    h.change_type,
+    h.date,
+    CASE
+        WHEN h.harvest_date = '0000-00-00' THEN NULL
+        ELSE STR_TO_DATE(h.harvest_date, '%Y-%m-%d')
+    END as harvest_date,
+    p.name,
+    p.unit,
+    p.main_category_id AS mainCategory,
+    p.subcat_id AS subcategory
+FROM item_history h
+INNER JOIN predefined_items p ON h.predefined_item_id = p.id
+ORDER BY h.date DESC
+
     ";
 
     error_log("Executing history query: " . $historyQuery);
