@@ -50,20 +50,20 @@ try {
 
     // Query current inventory with NULLIF to avoid invalid dates
     $query = "
-    SELECT
-        i.id,
-        i.predefined_item_id,
-        i.quantity,
-        NULLIF(NULLIF(i.harvest_date, '0000-00-00'), '') as harvest_date,
-        i.created_at,
-        i.updated_at,
-        p.name,
-        p.unit,
-        p.main_category_id as mainCategory,
-        p.subcat_id as subcategory
-    FROM items i
-    INNER JOIN predefined_items p ON i.predefined_item_id = p.id
-    ORDER BY i.created_at DESC
+        SELECT
+            i.id,
+            i.predefined_item_id,
+            i.quantity,
+            NULLIF(i.harvest_date, '0000-00-00') AS harvest_date,
+            i.created_at,
+            i.updated_at,
+            p.name,
+            p.unit,
+            p.main_category_id as mainCategory,
+            p.subcat_id as subcategory
+        FROM items i
+        INNER JOIN predefined_items p ON i.predefined_item_id = p.id
+        ORDER BY i.created_at DESC
     ";
 
     error_log("Executing query: " . $query);
@@ -98,7 +98,7 @@ try {
         h.notes,
         h.change_type,
         h.date,
-        NULLIF(NULLIF(h.harvest_date, '0000-00-00'), '') as harvest_date,
+        NULLIF(h.harvest_date, '0000-00-00') AS harvest_date,
         p.name,
         p.unit,
         p.main_category_id AS mainCategory,
