@@ -1,8 +1,18 @@
 import React, { useEffect } from 'react';
 import { History } from 'lucide-react';
-import { ConsolidatedItem, HistoryEntry, Category, ViewMode,} from '../types';
+import { ConsolidatedItem, HistoryEntry, ViewMode } from '../types';
 
-// Add this function to safely format dates
+type CategoryMap = {
+  [mainCategoryId: number | string]: {
+    label: string;
+    subcategories: {
+      [subCategoryId: number | string]: {
+        label: string;
+      };
+    };
+  };
+};
+
 const safeFormatDate = (date: string | number | null | undefined) => {
   if (!date) return "-";
   const dateValue = typeof date === 'number' ? new Date(date) : new Date(date);
@@ -10,7 +20,7 @@ const safeFormatDate = (date: string | number | null | undefined) => {
 };
 
 const formatDate = (date: string | null | undefined) => {
-  if (!date || date === "0000-00-00") return "-"; // Handle invalid dates
+  if (!date || date === "0000-00-00") return "-";
   try {
     const dateObj = new Date(date);
     if (isNaN(dateObj.getTime())) {
@@ -24,12 +34,10 @@ const formatDate = (date: string | null | undefined) => {
   }
 };
 
-
-
 interface InventoryTableProps {
   items: ConsolidatedItem[] | HistoryEntry[];
   viewMode: ViewMode;
-  categories: Category;
+  categories: CategoryMap;
   onReduceStock: (item: ConsolidatedItem) => void;
   onIncreaseStock: (item: ConsolidatedItem) => void;
   onViewHistory: (item: ConsolidatedItem) => void;
@@ -41,7 +49,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
   viewMode,
   onIncreaseStock,
   onReduceStock,
-  onViewHistory
+  onViewHistory,
 }) => {
   const itemsArray = Array.isArray(items) ? items : [];
 
@@ -51,17 +59,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     const subLabel = mainCat?.subcategories?.[subcategory]?.label || subcategory;
     return `${mainLabel} / ${subLabel}`;
   };
-
-  // useEffect(() => {
-  //   console.log('All items:', itemsArray);
-  //   if (viewMode === 'consolidated') {
-  //     console.log('Consolidated items:', itemsArray.map(item => ({
-  //       name: item.name,
-  //       harvestDate: item.harvestDate,
-  //       raw: item
-  //     })));
-  //   }
-  // }, [itemsArray, viewMode]);
 
   return (
     <div className="overflow-x-auto">
@@ -100,7 +97,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
             </tr>
           ) : (
             viewMode === 'consolidated' ? (
-              // Consolidated view
               (itemsArray as ConsolidatedItem[]).map((item) => (
                 <tr
                   key={`consolidated-${item.id}-${item.predefined_item_id}`}
@@ -140,7 +136,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
                 </tr>
               ))
             ) : (
-              // History view
               (itemsArray as HistoryEntry[]).map((entry, index) => (
                 <tr
                   key={`history-${entry.id}-${entry.date}-${index}`}
