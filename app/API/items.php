@@ -54,10 +54,7 @@ SELECT
     i.id,
     i.predefined_item_id,
     i.quantity,
-    CASE
-        WHEN i.harvest_date = '0000-00-00' THEN NULL
-        ELSE STR_TO_DATE(i.harvest_date, '%Y-%m-%d')
-    END as harvest_date,
+    STR_TO_DATE(NULLIF(i.harvest_date, '0000-00-00'), '%Y-%m-%d') AS harvest_date,
     i.created_at,
     i.updated_at,
     p.name,
@@ -66,7 +63,7 @@ SELECT
     p.subcat_id as subcategory
 FROM items i
 INNER JOIN predefined_items p ON i.predefined_item_id = p.id
-ORDER BY i.created_at DESC
+ORDER BY i.created_at DESC;
     ";
 
     error_log("Executing query: " . $query);
@@ -94,24 +91,21 @@ ORDER BY i.created_at DESC
 
     // Query full history
     $historyQuery = "
-    SELECT
+SELECT
     h.id,
     h.predefined_item_id,
     h.quantity,
     h.notes,
     h.change_type,
     h.date,
-    CASE
-        WHEN h.harvest_date = '0000-00-00' THEN NULL
-        ELSE STR_TO_DATE(h.harvest_date, '%Y-%m-%d')
-    END as harvest_date,
+    STR_TO_DATE(NULLIF(h.harvest_date, '0000-00-00'), '%Y-%m-%d') AS harvest_date,
     p.name,
     p.unit,
     p.main_category_id AS mainCategory,
     p.subcat_id AS subcategory
 FROM item_history h
 INNER JOIN predefined_items p ON h.predefined_item_id = p.id
-ORDER BY h.date DESC
+ORDER BY h.date DESC;
 
     ";
 
