@@ -224,7 +224,7 @@ const UserView: React.FC = () => {
           <Header />
           <main className="flex-1 p-6 max-w-6xl mx-auto flex flex-col">
             <h2 className="text-2xl font-bold text-green-700">Welcome, User!</h2>
-            <img src="cap.PNG" className="max-w-full h-auto border rounded shadow-md" />
+            <img src="/cap.png" className="max-w-full h-auto border rounded shadow-md" />
             <p className="text-gray-700 mt-2">You have read-only access to the system.</p>
             <div className="flex-1 overflow-y-auto overflow-x-auto">
               <InventoryTable items={items} categories={categories} viewMode={viewMode} />
