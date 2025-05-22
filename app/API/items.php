@@ -8,7 +8,7 @@ error_reporting(E_ALL);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/php_errors.log');
 
-// CORS headers with allowed origins
+// Allowed CORS origins
 $allowed_origins = [
     'https://soil-indol.vercel.app',
     'https://soil-3tik.onrender.com',
@@ -48,14 +48,14 @@ try {
     }
     error_log("DB connected successfully");
 
-    // Query current inventory with CASE for invalid dates
+    // Query current inventory with CASE for invalid dates ('0000-00-00' => NULL)
     $query = "
-    SELECT 
+    SELECT
         i.id,
         i.predefined_item_id,
         i.quantity,
-        CASE 
-            WHEN i.harvest_date = '00-00-0000' OR i.harvest_date IS NULL THEN NULL
+        CASE
+            WHEN i.harvest_date = '0000-00-00' OR i.harvest_date IS NULL THEN NULL
             ELSE i.harvest_date
         END as harvest_date,
         i.created_at,
@@ -92,9 +92,9 @@ try {
     }
     error_log("Fetched " . count($items) . " items");
 
-    // Query full history - add CASE to handle '0000-00-00' dates here too
+    // Query full history - handle '0000-00-00' as NULL here too
     $historyQuery = "
-    SELECT 
+    SELECT
         h.id,
         h.predefined_item_id,
         h.quantity,
@@ -124,7 +124,6 @@ try {
 
     $history = [];
     while ($row = $historyResult->fetch_assoc()) {
-        // harvest_date is already NULL if invalid due to CASE in SQL
         $history[] = [
             "id" => (int)$row['id'],
             "predefined_item_id" => (int)$row['predefined_item_id'],
@@ -162,4 +161,3 @@ if (isset($conn)) {
 }
 
 error_log("Finished items.php script");
-?>
