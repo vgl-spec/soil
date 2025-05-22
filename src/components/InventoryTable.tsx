@@ -1,18 +1,8 @@
 import React, { useEffect } from 'react';
 import { History } from 'lucide-react';
-import { ConsolidatedItem, HistoryEntry, ViewMode } from '../types';
+import { ConsolidatedItem, HistoryEntry, Category, ViewMode,} from '../types';
 
-type CategoryMap = {
-  [mainCategoryId: number | string]: {
-    label: string;
-    subcategories: {
-      [subCategoryId: number | string]: {
-        label: string;
-      };
-    };
-  };
-};
-
+// Add this function to safely format dates
 const safeFormatDate = (date: string | number | null | undefined) => {
   if (!date) return "-";
   const dateValue = typeof date === 'number' ? new Date(date) : new Date(date);
@@ -20,7 +10,7 @@ const safeFormatDate = (date: string | number | null | undefined) => {
 };
 
 const formatDate = (date: string | null | undefined) => {
-  if (!date || date === "0000-00-00") return "-";
+  if (!date || date === "0000-00-00") return "-"; // Handle invalid dates
   try {
     const dateObj = new Date(date);
     if (isNaN(dateObj.getTime())) {
@@ -34,10 +24,12 @@ const formatDate = (date: string | null | undefined) => {
   }
 };
 
+
+
 interface InventoryTableProps {
   items: ConsolidatedItem[] | HistoryEntry[];
   viewMode: ViewMode;
-  categories: CategoryMap;
+  categories: Category;
   onReduceStock: (item: ConsolidatedItem) => void;
   onIncreaseStock: (item: ConsolidatedItem) => void;
   onViewHistory: (item: ConsolidatedItem) => void;
@@ -49,16 +41,44 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
   viewMode,
   onIncreaseStock,
   onReduceStock,
-  onViewHistory,
+  onViewHistory
 }) => {
   const itemsArray = Array.isArray(items) ? items : [];
 
-  const getCategoryLabel = (mainCategory: string | number, subcategory: string | number) => {
-    const mainCat = categories[mainCategory];
-    const mainLabel = mainCat?.label || mainCategory;
-    const subLabel = mainCat?.subcategories?.[subcategory]?.label || subcategory;
-    return `${mainLabel} / ${subLabel}`;
-  };
+const getCategoryLabel = (mainCategoryId: string | number, subcategoryId: string | number) => {
+  let mainLabel = mainCategoryId;
+  let subLabel = subcategoryId;
+
+  for (const [, mainCat] of Object.entries(categories)) {
+    if (String(mainCat.id) === String(mainCategoryId)) {
+      mainLabel = mainCat.label;
+
+      for (const [, subCat] of Object.entries(mainCat.subcategories || {})) {
+        if (String(subCat.id) === String(subcategoryId)) {
+          subLabel = subCat.label;
+          break;
+        }
+      }
+
+      break;
+    }
+  }
+
+  return `${mainLabel} / ${subLabel}`;
+};
+
+
+
+  // useEffect(() => {
+  //   console.log('All items:', itemsArray);
+  //   if (viewMode === 'consolidated') {
+  //     console.log('Consolidated items:', itemsArray.map(item => ({
+  //       name: item.name,
+  //       harvestDate: item.harvestDate,
+  //       raw: item
+  //     })));
+  //   }
+  // }, [itemsArray, viewMode]);
 
   return (
     <div className="overflow-x-auto">
@@ -97,6 +117,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
             </tr>
           ) : (
             viewMode === 'consolidated' ? (
+              // Consolidated view
               (itemsArray as ConsolidatedItem[]).map((item) => (
                 <tr
                   key={`consolidated-${item.id}-${item.predefined_item_id}`}
@@ -136,6 +157,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
                 </tr>
               ))
             ) : (
+              // History view
               (itemsArray as HistoryEntry[]).map((entry, index) => (
                 <tr
                   key={`history-${entry.id}-${entry.date}-${index}`}
