@@ -48,16 +48,13 @@ try {
     }
     error_log("DB connected successfully");
 
-    // Query current inventory with CASE for invalid dates ('0000-00-00' => NULL)
+    // Query current inventory with NULLIF to avoid invalid dates
     $query = "
     SELECT
         i.id,
         i.predefined_item_id,
         i.quantity,
-        CASE
-            WHEN i.harvest_date = '0000-00-00' OR i.harvest_date IS NULL THEN NULL
-            ELSE i.harvest_date
-        END as harvest_date,
+        NULLIF(NULLIF(i.harvest_date, '0000-00-00'), '') as harvest_date,
         i.created_at,
         i.updated_at,
         p.name,
@@ -92,7 +89,7 @@ try {
     }
     error_log("Fetched " . count($items) . " items");
 
-    // Query full history - handle '0000-00-00' as NULL here too
+    // Query full history
     $historyQuery = "
     SELECT
         h.id,
@@ -101,10 +98,7 @@ try {
         h.notes,
         h.change_type,
         h.date,
-        CASE
-            WHEN h.harvest_date = '0000-00-00' OR h.harvest_date IS NULL THEN NULL
-            ELSE h.harvest_date
-        END as harvest_date,
+        NULLIF(NULLIF(h.harvest_date, '0000-00-00'), '') as harvest_date,
         p.name,
         p.unit,
         p.main_category_id AS mainCategory,
@@ -132,7 +126,7 @@ try {
             "subcategory" => $row['subcategory'],
             "quantity" => (int)$row['quantity'],
             "unit" => $row['unit'],
-            "harvestDate" => $row['harvest_date'],  // will be NULL if invalid
+            "harvestDate" => $row['harvest_date'] ? date('Y-m-d', strtotime($row['harvest_date'])) : null,
             "notes" => $row['notes'] ?? "",
             "changeType" => $row['change_type'],
             "date" => $row['date']
