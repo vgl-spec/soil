@@ -18,7 +18,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 $main_category_id = $data['main_category_id'] ?? null;
 $subcat_id = $data['subcat_id'] ?? null;
 $name = $data['name'] ?? null;
-$unit = $data['unit'] ?? 'Kgs';
+$unit = $data['unit'] ?? 'Kg';
 
 if (!$main_category_id || !$subcat_id || !$name) {
     echo json_encode(['success' => false, 'message' => 'Missing required fields']);
