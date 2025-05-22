@@ -17,7 +17,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
   const [subcategory, setSubcategory] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
-  const [unit, setUnit] = useState<Unit>('Kgs');
+  const [unit, setUnit] = useState<Unit>('Kg');
   const [harvestDate, setHarvestDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
   const [predefinedItems, setPredefinedItems] = useState<PredefinedItem[]>([]);
@@ -51,7 +51,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
       setUnit(selectedItem.unit);
     } else {
       setName('');
-      setUnit('Kgs');
+      setUnit('Kg');
     }
   };
 
@@ -243,12 +243,12 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
                   <input
                     type="radio"
                     name="unit"
-                    value="Kgs"
-                    checked={unit === 'Kgs'}
-                    onChange={() => setUnit('Kgs')}
+                    value="Kg"
+                    checked={unit === 'Kg'}
+                    onChange={() => setUnit('Kg')}
                     className="h-4 w-4 text-green-600"
                   />
-                  <span className="ml-2">Kgs</span>
+                  <span className="ml-2">Kg</span>
                 </label>
                 <label className="inline-flex items-center">
                   <input
