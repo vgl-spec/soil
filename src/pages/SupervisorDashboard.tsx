@@ -3,7 +3,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
 import ReportView from "../components/ReportView";
-import { HistoryEntry } from "../types";
+import { HistoryEntry, Category } from "../types";
 
 interface LogEntry {
   id: number;
@@ -15,29 +15,32 @@ interface LogEntry {
 
 const SupervisorDashboard: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [showReport, setShowReportView] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
+  const [categories, setCategories] = useState<Category>({});
 
   useEffect(() => {
     axios
       .get("https://soil-3tik.onrender.com/API/logs.php")
       .then((res) => setLogs(res.data))
       .catch((err) => console.error(err));
-  }, []);
 
-  // Cast logs to HistoryEntry[], using allowed changeType values
-  const transformedLogs: HistoryEntry[] = logs.map((log) => ({
-    id: log.id,
-    name: log.description,
-    mainCategory: "",
-    subcategory: "",
-    quantity: 0,
-    unit: "",
-    harvestDate: new Date(log.timestamp).toISOString(),
-    notes: log.action_type,
-    predefined_item_id: 0,
-    changeType: "add", // using valid type instead of "log"
-    date: new Date(log.timestamp).toISOString(),
-  }));
+    axios
+      .get("https://soil-3tik.onrender.com/API/categories.php")
+      .then((res) => {
+        const json = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+        setCategories(json);
+      })
+      .catch((err) => console.error("Failed to load categories:", err));
+
+    axios
+      .get("https://soil-3tik.onrender.com/API/items.php")
+      .then((res) => {
+        const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+        setHistoryEntries(Array.isArray(data.history) ? data.history : []);
+      })
+      .catch((err) => console.error("Failed to load history entries:", err));
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -57,7 +60,7 @@ const SupervisorDashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold">Operator Logs</h2>
               <button
-                onClick={() => setShowReportView(true)}
+                onClick={() => setShowReport(true)}
                 className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded"
               >
                 Generate Report
@@ -96,9 +99,9 @@ const SupervisorDashboard: React.FC = () => {
               </div>
             ) : (
               <ReportView
-                historyEntries={transformedLogs}
-                categories={{}}
-                onClose={() => setShowReportView(false)}
+                historyEntries={historyEntries}
+                categories={categories}
+                onClose={() => setShowReport(false)}
               />
             )}
           </main>
