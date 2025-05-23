@@ -27,7 +27,7 @@ const OperatorDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  const [selectedDateRange, setSelectedDateRange] = useState<string>("all");
+  const [selectedDateRange, setSelectedDateRange] = useState<string>("all"); // "all", "today", "7d", etc.
 
   // Fetch categories
   useEffect(() => {
@@ -272,7 +272,7 @@ const OperatorDashboard: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto max-h-[60vh] rounded border border-gray-300">
+                <div className="flex-1 overflow-y-auto max-h-[50vh] rounded border border-gray-300">
                   <InventoryTable
                     items={viewMode === "consolidated" ? filteredConsolidatedItems : filteredHistoryItems}
                     viewMode={viewMode}
