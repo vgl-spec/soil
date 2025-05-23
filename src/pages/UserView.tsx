@@ -125,18 +125,18 @@ const UserView: React.FC = () => {
           <Header />
           <main className="flex-1 p-6 flex flex-col overflow-hidden">
             <div className="overflow-x-auto mt-8 flex-1 flex flex-col">
-              <table className="w-full border-collapse flex-shrink-0">
+              <table className="w-full border-collapse flex-shrink-0 table-fixed">
                 <thead className="bg-green-700 text-white">
                   <tr>
-                    <th className="p-3 text-left">Item Name</th>
-                    <th className="p-3 text-left">Category</th>
-                    <th className="p-3 text-left">Current Stock</th>
-                    <th className="p-3 text-left">Recent Procured Date</th>
+                    <th className="p-3 text-left w-1/4">Item Name</th>
+                    <th className="p-3 text-left w-1/4">Category</th>
+                    <th className="p-3 text-left w-1/4">Current Stock</th>
+                    <th className="p-3 text-left w-1/4">Recent Procured Date</th>
                   </tr>
                 </thead>
               </table>
               <div className="overflow-y-auto max-h-[60vh] flex-1">
-                <table className="w-full border-collapse">
+                <table className="w-full border-collapse table-fixed">
                   <tbody>
                     {items.length === 0 ? (
                       <tr>
@@ -147,10 +147,10 @@ const UserView: React.FC = () => {
                     ) : (
                       items.map((item) => (
                         <tr key={`item-${item.id}-${item.predefined_item_id}`} className="border-b border-gray-200 hover:bg-gray-50">
-                          <td className="p-3">{item.name}</td>
-                          <td className="p-3">{getCategoryLabel(item.mainCategory, item.subcategory)}</td>
-                          <td className="p-3 font-medium">{item.quantity} {item.unit}</td>
-                          <td className="p-3">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</td>
+                          <td className="p-3 w-1/4">{item.name}</td>
+                          <td className="p-3 w-1/4">{getCategoryLabel(item.mainCategory, item.subcategory)}</td>
+                          <td className="p-3 font-medium w-1/4">{item.quantity} {item.unit}</td>
+                          <td className="p-3 w-1/4">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</td>
                         </tr>
                       ))
                     )}
