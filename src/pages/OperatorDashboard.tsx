@@ -24,6 +24,7 @@ const OperatorDashboard: React.FC = () => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [consolidatedItems, setConsolidatedItems] = useState<ConsolidatedItem[]>([]);
   const [selectedHistory, setSelectedHistory] = useState<HistoryEntry[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch categories
   useEffect(() => {
@@ -48,7 +49,6 @@ const OperatorDashboard: React.FC = () => {
       
       if (data.items && Array.isArray(data.items)) {
         const itemsWithDates = data.items.map((item: ConsolidatedItem) => {
-          // Get all history entries for this item
           const itemHistory = data.history.filter((h: HistoryEntry) => 
             h.predefined_item_id === item.predefined_item_id
           );
@@ -62,11 +62,10 @@ const OperatorDashboard: React.FC = () => {
           if (entriesWithDates.length > 0) {
             return {
               ...item,
-              harvestDate: entriesWithDates[0].harvestDate, // Use the most recent harvest date
+              harvestDate: entriesWithDates[0].harvestDate,
             };
           }
 
-          // If no entries with harvest dates, look for the initial 'add' entry
           const addEntries = itemHistory
             .filter((h: HistoryEntry) => h.changeType === 'add')
             .sort((a: HistoryEntry, b: HistoryEntry) => 
@@ -80,7 +79,6 @@ const OperatorDashboard: React.FC = () => {
             };
           }
 
-          // If no matching entries found, return item with null harvest date
           return {
             ...item,
             harvestDate: null
@@ -108,168 +106,177 @@ const OperatorDashboard: React.FC = () => {
     return `${mainLabel}/${subLabel}`;
   };
 
-  // Function to handle reducing stock
   const handleReduceStock = (item: ConsolidatedItem) => {
     setSelectedItem(item);
     setShowReduceModal(true);
   };
 
-  // Function to handle increasing stock
   const handleIncreaseStock = (item: ConsolidatedItem) => {
     setSelectedItem(item);
     setShowIncreaseModal(true);
   };
 
-  // Function to handle viewing history
   const handleViewHistory = (item: ConsolidatedItem) => {
-    // Sort itemHistory by date descending (most recent first)
     const itemHistory = historyEntries
       .filter((entry) => entry.predefined_item_id === item.predefined_item_id)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     console.log("Filtered itemHistory for modal:", itemHistory);
     setSelectedItem(item);
     setShowHistoryModal(true);
-    setSelectedHistory(itemHistory); // This should include ALL changeTypes, sorted by most recent
+    setSelectedHistory(itemHistory);
   };
 
-return (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-    <div className="w-full max-w-5xl max-h-[autovh] flex flex-col rounded-lg shadow-lg relative">
+  // 🔍 Filtered items (FIXED type-safe split)
+  const filteredConsolidatedItems = consolidatedItems.filter((item) =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-      {/* Translucent background layer */}
-      <div
-        className="absolute inset-0 rounded-lg"
-        style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
-        aria-hidden="true"
-      />
+  const filteredHistoryItems = historyEntries.filter((item) =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-      {/* Content layer */}
-      <div className="relative z-10 flex flex-col h-full">
-        <Header />
-        <main className="flex-1 p-6 flex flex-col">
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="w-full max-w-5xl max-h-[autovh] flex flex-col rounded-lg shadow-lg relative">
+        <div
+          className="absolute inset-0 rounded-lg"
+          style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
+          aria-hidden="true"
+        />
 
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Operator Dashboard</h2>
-            <div className="space-x-2">
-              <button
-                className="bg-green-700 text-white px-3 py-2 rounded hover:bg-green-800"
-                onClick={() => setShowAddModal(true)}
-              >
-                + Add Item
-              </button>
-              <button
-                className="bg-blue-700 text-white px-3 py-2 rounded hover:bg-blue-800"
-                onClick={() => setShowCategoryModal(true)}
-              >
-                Manage Categories
-              </button>
-              <button
-                className="bg-yellow-600 text-white px-3 py-2 rounded hover:bg-yellow-700"
-                onClick={() => setShowReportView(!showReportView)}
-              >
-                {showReportView ? "Back to Inventory" : "Generate Report"}
-              </button>
+        <div className="relative z-10 flex flex-col h-full">
+          <Header />
+          <main className="flex-1 p-6 flex flex-col">
+
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold">Operator Dashboard</h2>
+              <div className="space-x-2">
+                <button
+                  className="bg-green-700 text-white px-3 py-2 rounded hover:bg-green-800"
+                  onClick={() => setShowAddModal(true)}
+                >
+                  + Add Item
+                </button>
+                <button
+                  className="bg-blue-700 text-white px-3 py-2 rounded hover:bg-blue-800"
+                  onClick={() => setShowCategoryModal(true)}
+                >
+                  Manage Categories
+                </button>
+                <button
+                  className="bg-yellow-600 text-white px-3 py-2 rounded hover:bg-yellow-700"
+                  onClick={() => setShowReportView(!showReportView)}
+                >
+                  {showReportView ? "Back to Inventory" : "Generate Report"}
+                </button>
+              </div>
             </div>
-          </div>
 
-          {!showReportView ? (
-            <>
-              <div className="mb-4">
-                <button
-                  className={`px-4 py-2 mr-2 rounded ${
-                    viewMode === "consolidated" ? "bg-green-700 text-white" : "bg-white border"
-                  }`}
-                  onClick={() => setViewMode("consolidated")}
-                >
-                  Consolidated View
-                </button>
-                <button
-                  className={`px-4 py-2 rounded ${
-                    viewMode === "history" ? "bg-green-700 text-white" : "bg-white border"
-                  }`}
-                  onClick={() => setViewMode("history")}
-                >
-                  History View
-                </button>
-              </div>
+            {!showReportView ? (
+              <>
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    className="w-full p-2 border border-gray-300 rounded"
+                    placeholder="Search items..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
 
-              {/* Scrollable container for InventoryTable */}
-              <div className="flex-1 overflow-y-auto max-h-[60vh] rounded border border-gray-300">
-                <InventoryTable
-                  items={viewMode === "consolidated" ? consolidatedItems : historyEntries}
-                  viewMode={viewMode}
-                  categories={categories}
-                  onReduceStock={handleReduceStock}
-                  onIncreaseStock={handleIncreaseStock}
-                  onViewHistory={handleViewHistory}
-                />
-              </div>
-            </>
-          ) : (
-            <ReportView
-              historyEntries={historyEntries}
+                <div className="mb-4">
+                  <button
+                    className={`px-4 py-2 mr-2 rounded ${
+                      viewMode === "consolidated" ? "bg-green-700 text-white" : "bg-white border"
+                    }`}
+                    onClick={() => setViewMode("consolidated")}
+                  >
+                    Consolidated View
+                  </button>
+                  <button
+                    className={`px-4 py-2 rounded ${
+                      viewMode === "history" ? "bg-green-700 text-white" : "bg-white border"
+                    }`}
+                    onClick={() => setViewMode("history")}
+                  >
+                    History View
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto max-h-[60vh] rounded border border-gray-300">
+                  <InventoryTable
+                    items={viewMode === "consolidated" ? filteredConsolidatedItems : filteredHistoryItems}
+                    viewMode={viewMode}
+                    categories={categories}
+                    onReduceStock={handleReduceStock}
+                    onIncreaseStock={handleIncreaseStock}
+                    onViewHistory={handleViewHistory}
+                  />
+                </div>
+              </>
+            ) : (
+              <ReportView
+                historyEntries={historyEntries}
+                categories={categories}
+                onClose={() => setShowReportView(false)}
+              />
+            )}
+          </main>
+          <Footer />
+
+          {showAddModal && (
+            <AddItemModal
               categories={categories}
-              onClose={() => setShowReportView(false)}
+              onClose={() => setShowAddModal(false)}
+              onAddItem={() => {
+                setShowAddModal(false);
+                fetchItems();
+              }}
             />
           )}
-        </main>
-        <Footer />
 
-        {/* Modals */}
-        {showAddModal && (
-          <AddItemModal
-            categories={categories}
-            onClose={() => setShowAddModal(false)}
-            onAddItem={() => {
-              setShowAddModal(false);
-              fetchItems();
-            }}
-          />
-        )}
+          {showCategoryModal && (
+            <ManageCategoriesModal
+              categories={categories}
+              onUpdateCategories={(updatedCategories) => setCategories(updatedCategories)}
+              onClose={() => setShowCategoryModal(false)}
+            />
+          )}
 
-        {showCategoryModal && (
-          <ManageCategoriesModal
-            categories={categories}
-            onUpdateCategories={(updatedCategories) => setCategories(updatedCategories)}
-            onClose={() => setShowCategoryModal(false)}
-          />
-        )}
+          {showReduceModal && selectedItem && (
+            <ReduceStockModal
+              item={selectedItem}
+              onClose={() => setShowReduceModal(false)}
+              onReduceStock={() => {
+                setShowReduceModal(false);
+                fetchItems();
+              }}
+            />
+          )}
 
-        {showReduceModal && selectedItem && (
-          <ReduceStockModal
-            item={selectedItem}
-            onClose={() => setShowReduceModal(false)}
-            onReduceStock={() => {
-              setShowReduceModal(false);
-              fetchItems();
-            }}
-          />
-        )}
+          {showIncreaseModal && selectedItem && (
+            <IncreaseStockModal
+              item={selectedItem}
+              onClose={() => setShowIncreaseModal(false)}
+              onIncreaseStock={() => {
+                setShowIncreaseModal(false);
+                fetchItems();
+              }}
+            />
+          )}
 
-        {showIncreaseModal && selectedItem && (
-          <IncreaseStockModal
-            item={selectedItem}
-            onClose={() => setShowIncreaseModal(false)}
-            onIncreaseStock={() => {
-              setShowIncreaseModal(false);
-              fetchItems();
-            }}
-          />
-        )}
-
-        {showHistoryModal && selectedItem && (
-          <ItemHistoryModal
-            item={selectedItem}
-            historyEntries={selectedHistory}
-            categories={categories}
-            onClose={() => setShowHistoryModal(false)}
-          />
-        )}
+          {showHistoryModal && selectedItem && (
+            <ItemHistoryModal
+              item={selectedItem}
+              historyEntries={selectedHistory}
+              categories={categories}
+              onClose={() => setShowHistoryModal(false)}
+            />
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
-
+  );
 };
 
 export default OperatorDashboard;
