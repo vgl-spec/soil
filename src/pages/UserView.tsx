@@ -43,7 +43,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     const mainCat = categories[mainCategory];
     const mainLabel = mainCat?.label || mainCategory;
     const subLabel = mainCat?.subcategories?.[subcategory]?.label || subcategory;
-    return ${mainLabel} ${subLabel};
+    return `${mainLabel} ${subLabel}`;
   };
 
   return (
@@ -83,7 +83,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
           ) : viewMode === "consolidated" ? (
             (itemsArray as ConsolidatedItem[]).map((item) => (
               <tr
-                key={consolidated-${item.id}-${item.predefined_item_id}}
+                key={`consolidated-${item.id}-${item.predefined_item_id}`}
                 className="border-b border-gray-200 hover:bg-gray-50"
               >
                 <td className="p-3">{item.name}</td>
@@ -101,7 +101,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
           ) : (
             (itemsArray as HistoryEntry[]).map((entry, index) => (
               <tr
-                key={history-${entry.id}-${entry.date}-${index}}
+                key={`history-${entry.id}-${entry.date}-${index}`}
                 className="border-b border-gray-200 hover:bg-gray-50"
               >
                 <td className="p-3">{safeFormatDate(entry.date)}</td>
@@ -238,5 +238,3 @@ const UserView: React.FC = () => {
 
 
 export default UserView;
-
-
