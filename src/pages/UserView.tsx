@@ -210,22 +210,21 @@ const UserView: React.FC = () => {
     fetchItems();
   }, []);
 
-    return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="w-full max-w-6xl rounded-lg shadow-lg relative">
-        {/* Translucent background layer */}
+  return (
+    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-4">
+      <div className="w-full max-w-screen-lg bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95vh] overflow-hidden">
         <div
           className="absolute inset-0 rounded-lg"
-          style={{ background: "rgba(255, 255, 255, 0.45)", zIndex: 0, backdropFilter: "blur(8px)" }}
+          style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
           aria-hidden="true"
         />
-        {/* Content layer */}
-        <div className="relative z-10 flex flex-col min-h-screen">
+
+        <div className="relative z-10 flex flex-col h-full">
           <Header />
-          <main className="flex-1 p-6 max-w-6xl mx-auto flex flex-col">
+          <main className="flex-1 p-6 flex flex-col">
             <h2 className="text-2xl font-bold text-green-700">Welcome, User!</h2>
             <p className="text-gray-700 mt-2">You have read-only access to the system.</p>
-            <div className="flex-1 overflow-y-auto overflow-x-auto">
+            <div className="flex-1 overflow-y-auto overflow-x-auto mt-4">
               <InventoryTable items={items} categories={categories} viewMode={viewMode} />
             </div>
           </main>
