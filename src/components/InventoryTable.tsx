@@ -24,8 +24,6 @@ const formatDate = (date: string | null | undefined) => {
   }
 };
 
-
-
 interface InventoryTableProps {
   items: ConsolidatedItem[] | HistoryEntry[];
   viewMode: ViewMode;
@@ -33,6 +31,7 @@ interface InventoryTableProps {
   onReduceStock: (item: ConsolidatedItem) => void;
   onIncreaseStock: (item: ConsolidatedItem) => void;
   onViewHistory: (item: ConsolidatedItem) => void;
+  showActions?: boolean; // New optional prop to control actions column visibility
 }
 
 const InventoryTable: React.FC<InventoryTableProps> = ({
@@ -41,44 +40,32 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
   viewMode,
   onIncreaseStock,
   onReduceStock,
-  onViewHistory
+  onViewHistory,
+  showActions = true, // default to true for backward compatibility
 }) => {
   const itemsArray = Array.isArray(items) ? items : [];
 
-const getCategoryLabel = (mainCategoryId: string | number, subcategoryId: string | number) => {
-  let mainLabel = mainCategoryId;
-  let subLabel = subcategoryId;
+  const getCategoryLabel = (mainCategoryId: string | number, subcategoryId: string | number) => {
+    let mainLabel = mainCategoryId;
+    let subLabel = subcategoryId;
 
-  for (const [, mainCat] of Object.entries(categories)) {
-    if (String(mainCat.id) === String(mainCategoryId)) {
-      mainLabel = mainCat.label;
+    for (const [, mainCat] of Object.entries(categories)) {
+      if (String(mainCat.id) === String(mainCategoryId)) {
+        mainLabel = mainCat.label;
 
-      for (const [, subCat] of Object.entries(mainCat.subcategories || {})) {
-        if (String(subCat.id) === String(subcategoryId)) {
-          subLabel = subCat.label;
-          break;
+        for (const [, subCat] of Object.entries(mainCat.subcategories || {})) {
+          if (String(subCat.id) === String(subcategoryId)) {
+            subLabel = subCat.label;
+            break;
+          }
         }
+
+        break;
       }
-
-      break;
     }
-  }
 
-  return `${mainLabel} / ${subLabel}`;
-};
-
-
-
-  // useEffect(() => {
-  //   console.log('All items:', itemsArray);
-  //   if (viewMode === 'consolidated') {
-  //     console.log('Consolidated items:', itemsArray.map(item => ({
-  //       name: item.name,
-  //       harvestDate: item.harvestDate,
-  //       raw: item
-  //     })));
-  //   }
-  // }, [itemsArray, viewMode]);
+    return `${mainLabel} / ${subLabel}`;
+  };
 
   return (
     <div className="overflow-x-auto">
@@ -91,7 +78,7 @@ const getCategoryLabel = (mainCategoryId: string | number, subcategoryId: string
                 <th className="p-3 text-left">Category</th>
                 <th className="p-3 text-left">Current Stock</th>
                 <th className="p-3 text-left">Recent Procured Date</th>
-                <th className="p-3 text-left">Actions</th>
+                {showActions && <th className="p-3 text-left">Actions</th>}
               </>
             ) : (
               <>
@@ -109,7 +96,7 @@ const getCategoryLabel = (mainCategoryId: string | number, subcategoryId: string
           {itemsArray.length === 0 ? (
             <tr>
               <td
-                colSpan={viewMode === 'consolidated' ? 5 : 6}
+                colSpan={viewMode === 'consolidated' ? (showActions ? 5 : 4) : 6}
                 className="p-4 text-center text-gray-500 border border-gray-200"
               >
                 No items found
@@ -131,29 +118,31 @@ const getCategoryLabel = (mainCategoryId: string | number, subcategoryId: string
                   <td className="p-3">
                     {item.harvestDate ? formatDate(item.harvestDate) : "-"}
                   </td>
-                  <td className="p-3">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => onIncreaseStock(item)}
-                        className="bg-green-700 text-white px-3 py-1 rounded text-sm hover:bg-green-800 transition-colors"
-                      >
-                        Add
-                      </button>
-                      <button
-                        onClick={() => onReduceStock(item)}
-                        className="bg-amber-600 text-white px-3 py-1 rounded text-sm hover:bg-amber-700 transition-colors"
-                      >
-                        Reduce
-                      </button>
-                      <button
-                        onClick={() => onViewHistory(item)}
-                        className="bg-teal-700 text-white px-3 py-1 rounded text-sm hover:bg-teal-800 transition-colors flex items-center gap-1"
-                      >
-                        <History className="h-3 w-3" />
-                        History
-                      </button>
-                    </div>
-                  </td>
+                  {showActions && (
+                    <td className="p-3">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => onIncreaseStock(item)}
+                          className="bg-green-700 text-white px-3 py-1 rounded text-sm hover:bg-green-800 transition-colors"
+                        >
+                          Add
+                        </button>
+                        <button
+                          onClick={() => onReduceStock(item)}
+                          className="bg-amber-600 text-white px-3 py-1 rounded text-sm hover:bg-amber-700 transition-colors"
+                        >
+                          Reduce
+                        </button>
+                        <button
+                          onClick={() => onViewHistory(item)}
+                          className="bg-teal-700 text-white px-3 py-1 rounded text-sm hover:bg-teal-800 transition-colors flex items-center gap-1"
+                        >
+                          <History className="h-3 w-3" />
+                          History
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             ) : (
