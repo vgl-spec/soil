@@ -170,7 +170,7 @@ const OperatorDashboard: React.FC = () => {
             <div className="mb-2 grid grid-cols-1 gap-2 items-end">
               <input
                 type="text"
-                className="w-full p-2 border border-gray-300 rounded text-sm sm:text-base"
+                className="w-full p-2 border border-gray-300 rounded text-xs sm:text-sm"
                 placeholder="Search inventory..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -178,7 +178,7 @@ const OperatorDashboard: React.FC = () => {
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700">Main Category:</label>
                 <select
-                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-base"
+                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-sm"
                   value={selectedCategory || ""}
                   onChange={(e) => {
                     const value = e.target.value || null;
@@ -195,7 +195,7 @@ const OperatorDashboard: React.FC = () => {
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700">Subcategory:</label>
                 <select
-                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-base"
+                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-sm"
                   value={selectedSubcategory || ""}
                   onChange={(e) => {
                     const value = e.target.value || null;
@@ -215,7 +215,7 @@ const OperatorDashboard: React.FC = () => {
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700">Date Range:</label>
                 <select
-                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-base"
+                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-sm"
                   value={selectedDateRange}
                   onChange={(e) => setSelectedDateRange(e.target.value)}
                 >
@@ -240,7 +240,7 @@ const OperatorDashboard: React.FC = () => {
 
             <div className="mb-2 flex flex-col space-y-2">
               <button
-                className={`w-full px-4 py-2 rounded text-xs sm:text-base ${
+                className={`w-full px-4 py-2 rounded text-xs sm:text-sm ${
                   viewMode === "consolidated" ? "bg-green-700 text-white" : "bg-white border"
                 }`}
                 onClick={() => setViewMode("consolidated")}
@@ -248,7 +248,7 @@ const OperatorDashboard: React.FC = () => {
                 Consolidated View
               </button>
               <button
-                className={`w-full px-4 py-2 rounded text-xs sm:text-base ${
+                className={`w-full px-4 py-2 rounded text-xs sm:text-sm ${
                   viewMode === "history" ? "bg-green-700 text-white" : "bg-white border"
                 }`}
                 onClick={() => setViewMode("history")}

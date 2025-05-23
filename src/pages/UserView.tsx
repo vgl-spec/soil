@@ -114,43 +114,43 @@ const UserView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-4 sm:p-6">
-      <div className="w-full max-w-screen-lg bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95dvh] overflow-hidden">
+    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-2 sm:p-4">
+      <div className="w-full max-w-xs sm:max-w-sm bg-white bg-opacity-90 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95vh] overflow-hidden">
         <div
           className="absolute inset-0 rounded-lg"
-          style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
+          style={{ background: "rgba(255, 255, 255, 0.9)", zIndex: 0, backdropFilter: "blur(8px)" }}
           aria-hidden="true"
         />
         <div className="relative z-10 flex flex-col h-full">
           <Header />
-          <main className="flex-1 p-6 flex flex-col overflow-hidden">
-            <div className="overflow-x-auto mt-8 flex-1 flex flex-col">
-              <table className="w-full border-collapse flex-shrink-0 table-fixed">
+          <main className="flex-1 p-2 sm:p-4 flex flex-col overflow-hidden">
+            <div className="overflow-x-auto mt-4 flex-1 flex flex-col">
+              <table className="w-full border-collapse flex-shrink-0 table-fixed text-xs sm:text-sm">
                 <thead className="bg-green-700 text-white">
                   <tr>
-                    <th className="p-3 text-left w-1/4">Item Name</th>
-                    <th className="p-3 text-left w-1/4">Category</th>
-                    <th className="p-3 text-left w-1/4">Current Stock</th>
-                    <th className="p-3 text-left w-1/4">Recent Procured Date</th>
+                    <th className="p-2 text-left w-1/4">Item Name</th>
+                    <th className="p-2 text-left w-1/4">Category</th>
+                    <th className="p-2 text-left w-1/4">Current Stock</th>
+                    <th className="p-2 text-left w-1/4">Recent Procured Date</th>
                   </tr>
                 </thead>
               </table>
-              <div className="overflow-y-auto max-h-[60dvh] flex-1">
-                <table className="w-full border-collapse table-fixed">
+              <div className="overflow-y-auto max-h-[60vh] flex-1">
+                <table className="w-full border-collapse table-fixed text-xs sm:text-sm">
                   <tbody>
                     {items.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="p-4 text-center text-gray-500 border border-gray-200">
+                        <td colSpan={4} className="p-2 text-center text-gray-500 border border-gray-200">
                           No items found
                         </td>
                       </tr>
                     ) : (
                       items.map((item) => (
                         <tr key={`item-${item.id}-${item.predefined_item_id}`} className="border-b border-gray-200 hover:bg-gray-50">
-                          <td className="p-3 w-1/4">{item.name}</td>
-                          <td className="p-3 w-1/4">{getCategoryLabel(item.mainCategory, item.subcategory)}</td>
-                          <td className="p-3 font-medium w-1/4">{item.quantity} {item.unit}</td>
-                          <td className="p-3 w-1/4">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</td>
+                          <td className="p-2 w-1/4">{item.name}</td>
+                          <td className="p-2 w-1/4">{getCategoryLabel(item.mainCategory, item.subcategory)}</td>
+                          <td className="p-2 font-medium w-1/4">{item.quantity} {item.unit}</td>
+                          <td className="p-2 w-1/4">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</td>
                         </tr>
                       ))
                     )}
