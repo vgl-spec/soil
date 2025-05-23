@@ -43,7 +43,7 @@ const SupervisorDashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4 sm:p-6">
       <div className="w-full max-w-4xl bg-white rounded-lg relative">
         <div
           className="absolute inset-0 rounded-lg"
@@ -56,12 +56,12 @@ const SupervisorDashboard: React.FC = () => {
         />
         <div className="relative z-10 flex flex-col min-h-screen">
           <Header />
-          <main className="flex-1 p-6 max-w-6xl mx-auto bg-white shadow rounded-lg rounded-tl-none rounded-tr-none flex flex-col">
+          <main className="flex-1 p-4 sm:p-6 max-w-6xl mx-auto bg-white shadow rounded-lg rounded-tl-none rounded-tr-none flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold">Operator Logs</h2>
               <button
                 onClick={() => setShowReport(true)}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded"
+                className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded text-base sm:text-lg"
               >
                 Generate Report
               </button>
