@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Header: React.FC = () => {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    // Implement logout logic here, e.g., clear auth tokens, redirect, etc.
-    console.log("Logout clicked");
+    sessionStorage.removeItem("user");
+    navigate("/");
   };
 
   return (
