@@ -15,7 +15,7 @@ interface LogEntry {
 
 const SupervisorDashboard: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [showReport, setShowReport] = useState(false);
+  const [showReport, setShowReportView] = useState(false);
 
   useEffect(() => {
     axios
@@ -57,7 +57,7 @@ const SupervisorDashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold">Operator Logs</h2>
               <button
-                onClick={() => setShowReport(true)}
+                onClick={() => setShowReportView(true)}
                 className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded"
               >
                 Generate Report
@@ -98,7 +98,7 @@ const SupervisorDashboard: React.FC = () => {
               <ReportView
                 historyEntries={transformedLogs}
                 categories={{}}
-                onClose={() => setShowReport(false)}
+                onClose={() => setShowReportView(false)}
               />
             )}
           </main>
