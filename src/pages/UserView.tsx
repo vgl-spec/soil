@@ -123,9 +123,9 @@ const UserView: React.FC = () => {
         />
         <div className="relative z-10 flex flex-col h-full">
           <Header />
-          <main className="flex-1 p-6 flex flex-col overflow-auto">
-            <div className="overflow-x-auto mt-8">
-              <table className="w-full border-collapse">
+          <main className="flex-1 p-6 flex flex-col overflow-hidden">
+            <div className="overflow-x-auto mt-8 flex-1 flex flex-col">
+              <table className="w-full border-collapse flex-shrink-0">
                 <thead className="bg-green-700 text-white">
                   <tr>
                     <th className="p-3 text-left">Item Name</th>
@@ -134,25 +134,29 @@ const UserView: React.FC = () => {
                     <th className="p-3 text-left">Recent Procured Date</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {items.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="p-4 text-center text-gray-500 border border-gray-200">
-                        No items found
-                      </td>
-                    </tr>
-                  ) : (
-                    items.map((item) => (
-                      <tr key={`item-${item.id}-${item.predefined_item_id}`} className="border-b border-gray-200 hover:bg-gray-50">
-                        <td className="p-3">{item.name}</td>
-                        <td className="p-3">{getCategoryLabel(item.mainCategory, item.subcategory)}</td>
-                        <td className="p-3 font-medium">{item.quantity} {item.unit}</td>
-                        <td className="p-3">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
               </table>
+              <div className="overflow-y-auto flex-1">
+                <table className="w-full border-collapse">
+                  <tbody>
+                    {items.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-4 text-center text-gray-500 border border-gray-200">
+                          No items found
+                        </td>
+                      </tr>
+                    ) : (
+                      items.map((item) => (
+                        <tr key={`item-${item.id}-${item.predefined_item_id}`} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="p-3">{item.name}</td>
+                          <td className="p-3">{getCategoryLabel(item.mainCategory, item.subcategory)}</td>
+                          <td className="p-3 font-medium">{item.quantity} {item.unit}</td>
+                          <td className="p-3">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </main>
           <Footer />
