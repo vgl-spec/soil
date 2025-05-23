@@ -43,7 +43,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     const mainCat = categories[mainCategory];
     const mainLabel = mainCat?.label || mainCategory;
     const subLabel = mainCat?.subcategories?.[subcategory]?.label || subcategory;
-    return `${mainLabel} ${subLabel}`;
+    return ${mainLabel} ${subLabel};
   };
 
   return (
@@ -83,7 +83,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
           ) : viewMode === "consolidated" ? (
             (itemsArray as ConsolidatedItem[]).map((item) => (
               <tr
-                key={`consolidated-${item.id}-${item.predefined_item_id}`}
+                key={consolidated-${item.id}-${item.predefined_item_id}}
                 className="border-b border-gray-200 hover:bg-gray-50"
               >
                 <td className="p-3">{item.name}</td>
@@ -101,7 +101,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
           ) : (
             (itemsArray as HistoryEntry[]).map((entry, index) => (
               <tr
-                key={`history-${entry.id}-${entry.date}-${index}`}
+                key={history-${entry.id}-${entry.date}-${index}}
                 className="border-b border-gray-200 hover:bg-gray-50"
               >
                 <td className="p-3">{safeFormatDate(entry.date)}</td>
@@ -210,21 +210,22 @@ const UserView: React.FC = () => {
     fetchItems();
   }, []);
 
-  return (
-    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-4">
-      <div className="w-full max-w-screen-lg bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95vh]">
+    return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="w-full max-w-6xl rounded-lg shadow-lg relative">
+        {/* Translucent background layer */}
         <div
           className="absolute inset-0 rounded-lg"
-          style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
+          style={{ background: "rgba(255, 255, 255, 0.45)", zIndex: 0, backdropFilter: "blur(8px)" }}
           aria-hidden="true"
         />
-
-        <div className="relative z-10 flex flex-col h-full">
+        {/* Content layer */}
+        <div className="relative z-10 flex flex-col min-h-screen">
           <Header />
-          <main className="flex-1 p-6 flex flex-col">
+          <main className="flex-1 p-6 max-w-6xl mx-auto flex flex-col">
             <h2 className="text-2xl font-bold text-green-700">Welcome, User!</h2>
             <p className="text-gray-700 mt-2">You have read-only access to the system.</p>
-            <div className="mt-4 flex-1 max-h-sm overflow-auto rounded border border-gray-300">
+            <div className="flex-1 overflow-y-auto overflow-x-auto">
               <InventoryTable items={items} categories={categories} viewMode={viewMode} />
             </div>
           </main>
@@ -235,4 +236,7 @@ const UserView: React.FC = () => {
   );
 };
 
+
 export default UserView;
+
+
