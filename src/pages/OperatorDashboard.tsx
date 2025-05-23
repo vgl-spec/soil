@@ -156,29 +156,29 @@ const OperatorDashboard: React.FC = () => {
   const filteredHistoryItems = filterItems(historyEntries);
 
   return (
-    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-4 sm:p-6">
-      <div className="w-full max-w-screen-lg bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95dvh] overflow-hidden">
+    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-2 sm:p-4">
+      <div className="w-full max-w-xs sm:max-w-sm bg-white bg-opacity-90 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95vh] overflow-hidden">
         <div
           className="absolute inset-0 rounded-lg"
-          style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
+          style={{ background: "rgba(255, 255, 255, 0.9)", zIndex: 0, backdropFilter: "blur(8px)" }}
           aria-hidden="true"
         />
         <div className="relative z-10 flex flex-col h-full">
           <Header />
-          <main className="flex-1 p-6 flex flex-col">
+          <main className="flex-1 p-2 sm:p-4 flex flex-col">
 
-            <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div className="mb-2 grid grid-cols-1 gap-2 items-end">
               <input
                 type="text"
-                className="w-full p-2 border border-gray-300 rounded text-base sm:text-lg"
+                className="w-full p-2 border border-gray-300 rounded text-sm sm:text-base"
                 placeholder="Search inventory..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <div>
-                <label className="block text-sm font-medium text-gray-700">Main Category:</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">Main Category:</label>
                 <select
-                  className="w-full p-2 border border-gray-300 rounded text-base sm:text-lg"
+                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-base"
                   value={selectedCategory || ""}
                   onChange={(e) => {
                     const value = e.target.value || null;
@@ -193,9 +193,9 @@ const OperatorDashboard: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Subcategory:</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">Subcategory:</label>
                 <select
-                  className="w-full p-2 border border-gray-300 rounded text-base sm:text-lg"
+                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-base"
                   value={selectedSubcategory || ""}
                   onChange={(e) => {
                     const value = e.target.value || null;
@@ -213,9 +213,9 @@ const OperatorDashboard: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Date Range:</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">Date Range:</label>
                 <select
-                  className="w-full p-2 border border-gray-300 rounded text-base sm:text-lg"
+                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-base"
                   value={selectedDateRange}
                   onChange={(e) => setSelectedDateRange(e.target.value)}
                 >
@@ -227,7 +227,7 @@ const OperatorDashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto max-h-[50dvh] rounded border border-gray-300">
+            <div className="flex-1 overflow-y-auto max-h-[50vh] rounded border border-gray-300">
               <InventoryTable
                 items={viewMode === "consolidated" ? filteredConsolidatedItems : filteredHistoryItems}
                 viewMode={viewMode}
@@ -238,9 +238,9 @@ const OperatorDashboard: React.FC = () => {
               />
             </div>
 
-            <div className="mb-4">
+            <div className="mb-2 flex flex-col space-y-2">
               <button
-                className={`px-4 py-2 mr-2 rounded text-base sm:text-lg ${
+                className={`w-full px-4 py-2 rounded text-xs sm:text-base ${
                   viewMode === "consolidated" ? "bg-green-700 text-white" : "bg-white border"
                 }`}
                 onClick={() => setViewMode("consolidated")}
@@ -248,7 +248,7 @@ const OperatorDashboard: React.FC = () => {
                 Consolidated View
               </button>
               <button
-                className={`px-4 py-2 rounded text-base sm:text-lg ${
+                className={`w-full px-4 py-2 rounded text-xs sm:text-base ${
                   viewMode === "history" ? "bg-green-700 text-white" : "bg-white border"
                 }`}
                 onClick={() => setViewMode("history")}
