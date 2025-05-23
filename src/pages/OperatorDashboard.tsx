@@ -27,8 +27,7 @@ const OperatorDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  const [selectedDateRange, setSelectedDateRange] = useState<string>("all"); // "all", "today", "7d", etc.
-
+  const [selectedDateRange, setSelectedDateRange] = useState<string>("all");
 
   // Fetch categories
   useEffect(() => {
@@ -48,7 +47,6 @@ const OperatorDashboard: React.FC = () => {
   const fetchItems = async () => {
     try {
       const res = await axios.get("https://soil-3tik.onrender.com/API/items.php");
-      console.log('API Response:', res.data);
       const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
       
       if (data.items && Array.isArray(data.items)) {
@@ -124,41 +122,39 @@ const OperatorDashboard: React.FC = () => {
     const itemHistory = historyEntries
       .filter((entry) => entry.predefined_item_id === item.predefined_item_id)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    console.log("Filtered itemHistory for modal:", itemHistory);
     setSelectedItem(item);
     setShowHistoryModal(true);
     setSelectedHistory(itemHistory);
   };
 
-  // 🔍 Filtered items (FIXED type-safe split)
-const filterItems = <T extends { name: string; mainCategory: string | number; subcategory: string | number; date?: string }>(
-  items: T[]
-) => {
-  return items.filter((item) => {
-    const nameMatch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const categoryMatch = !selectedCategory || item.mainCategory === selectedCategory;
-    const subcategoryMatch = !selectedSubcategory || item.subcategory === selectedSubcategory;
-    const dateMatch = (() => {
-      if (selectedDateRange === "all" || !item.date) return true;
-      const itemDate = new Date(item.date);
-      const now = new Date();
-      if (selectedDateRange === "today") {
-        return itemDate.toDateString() === now.toDateString();
-      } else if (selectedDateRange === "7d") {
-        return now.getTime() - itemDate.getTime() <= 7 * 24 * 60 * 60 * 1000;
-      } else if (selectedDateRange === "30d") {
-        return now.getTime() - itemDate.getTime() <= 30 * 24 * 60 * 60 * 1000;
-      }
-      return true;
-    })();
-    return nameMatch && categoryMatch && subcategoryMatch && dateMatch;
-  });
-};
+  // Filtered items
+  const filterItems = <T extends { name: string; mainCategory: string | number; subcategory: string | number; date?: string }>(
+    items: T[]
+  ) => {
+    return items.filter((item) => {
+      const nameMatch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const categoryMatch = !selectedCategory || item.mainCategory === selectedCategory;
+      const subcategoryMatch = !selectedSubcategory || item.subcategory === selectedSubcategory;
+      const dateMatch = (() => {
+        if (selectedDateRange === "all" || !item.date) return true;
+        const itemDate = new Date(item.date);
+        const now = new Date();
+        if (selectedDateRange === "today") {
+          return itemDate.toDateString() === now.toDateString();
+        } else if (selectedDateRange === "7d") {
+          return now.getTime() - itemDate.getTime() <= 7 * 24 * 60 * 60 * 1000;
+        } else if (selectedDateRange === "30d") {
+          return now.getTime() - itemDate.getTime() <= 30 * 24 * 60 * 60 * 1000;
+        }
+        return true;
+      })();
+      return nameMatch && categoryMatch && subcategoryMatch && dateMatch;
+    });
+  };
 
-const filteredConsolidatedItems = filterItems(consolidatedItems);
-const filteredHistoryItems = filterItems(historyEntries);
+  const filteredConsolidatedItems = filterItems(consolidatedItems);
+  const filteredHistoryItems = filterItems(historyEntries);
 
-  
   return (
     <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-4">
       <div className="w-full max-w-screen-lg bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95vh] overflow-hidden">
@@ -198,65 +194,65 @@ const filteredHistoryItems = filterItems(historyEntries);
 
             {!showReportView ? (
               <>
-            <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-              <input
-                type="text"
-                className="w-full p-2 border border-gray-300 rounded"
-                placeholder="Search inventory..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Main Category:</label>
-                <select
-                  className="w-full p-2 border border-gray-300 rounded"
-                  value={selectedCategory || ""}
-                  onChange={(e) => {
-                    const value = e.target.value || null;
-                    setSelectedCategory(value);
-                    setSelectedSubcategory(null);
-                  }}
-                >
-                  <option value="">All</option>
-                  {Object.entries(categories).map(([key, cat]) => (
-                    <option key={key} value={key}>{cat.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Subcategory:</label>
-                <select
-                  className="w-full p-2 border border-gray-300 rounded"
-                  value={selectedSubcategory || ""}
-                  onChange={(e) => {
-                    const value = e.target.value || null;
-                    setSelectedSubcategory(value);
-                  }}
-                  disabled={!selectedCategory}
-                >
-                  <option value="">All</option>
-                  {selectedCategory &&
-                    Object.entries(categories[selectedCategory]?.subcategories || {}).map(
-                      ([key, sub]) => (
-                        <option key={key} value={key}>{sub.label}</option>
-                      )
-                    )}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Date Range:</label>
-                <select
-                  className="w-full p-2 border border-gray-300 rounded"
-                  value={selectedDateRange}
-                  onChange={(e) => setSelectedDateRange(e.target.value)}
-                >
-                  <option value="all">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="7d">Last 7 Days</option>
-                  <option value="30d">Last 30 Days</option>
-                </select>
-              </div>
-            </div>
+                <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                  <input
+                    type="text"
+                    className="w-full p-2 border border-gray-300 rounded"
+                    placeholder="Search inventory..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Main Category:</label>
+                    <select
+                      className="w-full p-2 border border-gray-300 rounded"
+                      value={selectedCategory || ""}
+                      onChange={(e) => {
+                        const value = e.target.value || null;
+                        setSelectedCategory(value);
+                        setSelectedSubcategory(null);
+                      }}
+                    >
+                      <option value="">All</option>
+                      {Object.entries(categories).map(([key, cat]) => (
+                        <option key={key} value={key}>{cat.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Subcategory:</label>
+                    <select
+                      className="w-full p-2 border border-gray-300 rounded"
+                      value={selectedSubcategory || ""}
+                      onChange={(e) => {
+                        const value = e.target.value || null;
+                        setSelectedSubcategory(value);
+                      }}
+                      disabled={!selectedCategory}
+                    >
+                      <option value="">All</option>
+                      {selectedCategory &&
+                        Object.entries(categories[selectedCategory]?.subcategories || {}).map(
+                          ([key, sub]) => (
+                            <option key={key} value={key}>{sub.label}</option>
+                          )
+                        )}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date Range:</label>
+                    <select
+                      className="w-full p-2 border border-gray-300 rounded"
+                      value={selectedDateRange}
+                      onChange={(e) => setSelectedDateRange(e.target.value)}
+                    >
+                      <option value="all">All Time</option>
+                      <option value="today">Today</option>
+                      <option value="7d">Last 7 Days</option>
+                      <option value="30d">Last 30 Days</option>
+                    </select>
+                  </div>
+                </div>
                 <div className="mb-4">
                   <button
                     className={`px-4 py-2 mr-2 rounded ${
