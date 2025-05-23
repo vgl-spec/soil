@@ -219,12 +219,12 @@ const UserView: React.FC = () => {
           aria-hidden="true"
         />
 
-        <div className="relative z-10 flex flex-col h-full overflow-y-auto">
+        <div className="relative z-10 flex flex-col h-full">
           <Header />
           <main className="flex-1 p-6 flex flex-col">
             <h2 className="text-2xl font-bold text-green-700">Welcome, User!</h2>
             <p className="text-gray-700 mt-2">You have read-only access to the system.</p>
-            <div className="flex-1 overflow-y-auto overflow-x-auto mt-4">
+            <div className="flex-1 overflow-y-auto overflow-y-auto mt-4">
               <InventoryTable items={items} categories={categories} viewMode={viewMode} />
             </div>
           </main>
