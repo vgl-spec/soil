@@ -135,7 +135,7 @@ const UserView: React.FC = () => {
                   </tr>
                 </thead>
               </table>
-              <div className="overflow-y-auto flex-1">
+              <div className="overflow-y-auto max-h-[60vh] flex-1">
                 <table className="w-full border-collapse">
                   <tbody>
                     {items.length === 0 ? (
