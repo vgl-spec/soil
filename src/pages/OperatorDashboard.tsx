@@ -156,108 +156,192 @@ const OperatorDashboard: React.FC = () => {
   const filteredHistoryItems = filterItems(historyEntries);
 
   return (
-    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-2 sm:p-4">
-      <div className="w-full max-w-xs sm:max-w-sm bg-white bg-opacity-90 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95vh] overflow-hidden">
+    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-4">
+      <div className="w-full max-w-screen-lg bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95vh] overflow-hidden">
         <div
           className="absolute inset-0 rounded-lg"
-          style={{ background: "rgba(255, 255, 255, 0.9)", zIndex: 0, backdropFilter: "blur(8px)" }}
+          style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
           aria-hidden="true"
         />
+
         <div className="relative z-10 flex flex-col h-full">
           <Header />
-          <main className="flex-1 p-2 sm:p-4 flex flex-col">
+          <main className="flex-1 p-6 flex flex-col">
 
-            <div className="mb-2 grid grid-cols-1 gap-2 items-end">
-              <input
-                type="text"
-                className="w-full p-2 border border-gray-300 rounded text-xs sm:text-sm"
-                placeholder="Search inventory..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700">Main Category:</label>
-                <select
-                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-sm"
-                  value={selectedCategory || ""}
-                  onChange={(e) => {
-                    const value = e.target.value || null;
-                    setSelectedCategory(value);
-                    setSelectedSubcategory(null);
-                  }}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold">Operator Dashboard</h2>
+              <div className="space-x-2">
+                <button
+                  className="bg-green-700 text-white px-3 py-2 rounded hover:bg-green-800"
+                  onClick={() => setShowAddModal(true)}
                 >
-                  <option value="">All</option>
-                  {Object.entries(categories).map(([key, cat]) => (
-                    <option key={key} value={key}>{cat.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700">Subcategory:</label>
-                <select
-                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-sm"
-                  value={selectedSubcategory || ""}
-                  onChange={(e) => {
-                    const value = e.target.value || null;
-                    setSelectedSubcategory(value);
-                  }}
-                  disabled={!selectedCategory}
+                  + Add Item
+                </button>
+                <button
+                  className="bg-blue-700 text-white px-3 py-2 rounded hover:bg-blue-800"
+                  onClick={() => setShowCategoryModal(true)}
                 >
-                  <option value="">All</option>
-                  {selectedCategory &&
-                    Object.entries(categories[selectedCategory]?.subcategories || {}).map(
-                      ([key, sub]) => (
-                        <option key={key} value={key}>{sub.label}</option>
-                      )
-                    )}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700">Date Range:</label>
-                <select
-                  className="w-full p-2 border border-gray-300 rounded text-xs sm:text-sm"
-                  value={selectedDateRange}
-                  onChange={(e) => setSelectedDateRange(e.target.value)}
+                  Manage Categories
+                </button>
+                <button
+                  className="bg-yellow-600 text-white px-3 py-2 rounded hover:bg-yellow-700"
+                  onClick={() => setShowReportView(!showReportView)}
                 >
-                  <option value="all">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="7d">Last 7 Days</option>
-                  <option value="30d">Last 30 Days</option>
-                </select>
+                  {showReportView ? "Back to Inventory" : "Generate Report"}
+                </button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto max-h-[50vh] rounded border border-gray-300">
-              <InventoryTable
-                items={viewMode === "consolidated" ? filteredConsolidatedItems : filteredHistoryItems}
-                viewMode={viewMode}
+            {!showReportView ? (
+              <>
+                <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                  <input
+                    type="text"
+                    className="w-full p-2 border border-gray-300 rounded"
+                    placeholder="Search inventory..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Main Category:</label>
+                    <select
+                      className="w-full p-2 border border-gray-300 rounded"
+                      value={selectedCategory || ""}
+                      onChange={(e) => {
+                        const value = e.target.value || null;
+                        setSelectedCategory(value);
+                        setSelectedSubcategory(null);
+                      }}
+                    >
+                      <option value="">All</option>
+                      {Object.entries(categories).map(([key, cat]) => (
+                        <option key={key} value={key}>{cat.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Subcategory:</label>
+                    <select
+                      className="w-full p-2 border border-gray-300 rounded"
+                      value={selectedSubcategory || ""}
+                      onChange={(e) => {
+                        const value = e.target.value || null;
+                        setSelectedSubcategory(value);
+                      }}
+                      disabled={!selectedCategory}
+                    >
+                      <option value="">All</option>
+                      {selectedCategory &&
+                        Object.entries(categories[selectedCategory]?.subcategories || {}).map(
+                          ([key, sub]) => (
+                            <option key={key} value={key}>{sub.label}</option>
+                          )
+                        )}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date Range:</label>
+                    <select
+                      className="w-full p-2 border border-gray-300 rounded"
+                      value={selectedDateRange}
+                      onChange={(e) => setSelectedDateRange(e.target.value)}
+                    >
+                      <option value="all">All Time</option>
+                      <option value="today">Today</option>
+                      <option value="7d">Last 7 Days</option>
+                      <option value="30d">Last 30 Days</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <button
+                    className={`px-4 py-2 mr-2 rounded ${
+                      viewMode === "consolidated" ? "bg-green-700 text-white" : "bg-white border"
+                    }`}
+                    onClick={() => setViewMode("consolidated")}
+                  >
+                    Consolidated View
+                  </button>
+                  <button
+                    className={`px-4 py-2 rounded ${
+                      viewMode === "history" ? "bg-green-700 text-white" : "bg-white border"
+                    }`}
+                    onClick={() => setViewMode("history")}
+                  >
+                    History View
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto max-h-[50vh] rounded border border-gray-300">
+                  <InventoryTable
+                    items={viewMode === "consolidated" ? filteredConsolidatedItems : filteredHistoryItems}
+                    viewMode={viewMode}
+                    categories={categories}
+                    onReduceStock={handleReduceStock}
+                    onIncreaseStock={handleIncreaseStock}
+                    onViewHistory={handleViewHistory}
+                  />
+                </div>
+              </>
+            ) : (
+              <ReportView
+                historyEntries={historyEntries}
                 categories={categories}
-                onReduceStock={handleReduceStock}
-                onIncreaseStock={handleIncreaseStock}
-                onViewHistory={handleViewHistory}
+                onClose={() => setShowReportView(false)}
               />
-            </div>
-
-            <div className="mb-2 flex flex-col space-y-2">
-              <button
-                className={`w-full px-4 py-2 rounded text-xs sm:text-sm ${
-                  viewMode === "consolidated" ? "bg-green-700 text-white" : "bg-white border"
-                }`}
-                onClick={() => setViewMode("consolidated")}
-              >
-                Consolidated View
-              </button>
-              <button
-                className={`w-full px-4 py-2 rounded text-xs sm:text-sm ${
-                  viewMode === "history" ? "bg-green-700 text-white" : "bg-white border"
-                }`}
-                onClick={() => setViewMode("history")}
-              >
-                History View
-              </button>
-            </div>
+            )}
           </main>
           <Footer />
+
+          {showAddModal && (
+            <AddItemModal
+              categories={categories}
+              onClose={() => setShowAddModal(false)}
+              onAddItem={() => {
+                setShowAddModal(false);
+                fetchItems();
+              }}
+            />
+          )}
+
+          {showCategoryModal && (
+            <ManageCategoriesModal
+              categories={categories}
+              onUpdateCategories={(updatedCategories) => setCategories(updatedCategories)}
+              onClose={() => setShowCategoryModal(false)}
+            />
+          )}
+
+          {showReduceModal && selectedItem && (
+            <ReduceStockModal
+              item={selectedItem}
+              onClose={() => setShowReduceModal(false)}
+              onReduceStock={() => {
+                setShowReduceModal(false);
+                fetchItems();
+              }}
+            />
+          )}
+
+          {showIncreaseModal && selectedItem && (
+            <IncreaseStockModal
+              item={selectedItem}
+              onClose={() => setShowIncreaseModal(false)}
+              onIncreaseStock={() => {
+                setShowIncreaseModal(false);
+                fetchItems();
+              }}
+            />
+          )}
+
+          {showHistoryModal && selectedItem && (
+            <ItemHistoryModal
+              item={selectedItem}
+              historyEntries={selectedHistory}
+              categories={categories}
+              onClose={() => setShowHistoryModal(false)}
+            />
+          )}
         </div>
       </div>
     </div>
