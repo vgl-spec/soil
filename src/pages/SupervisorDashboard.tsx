@@ -68,7 +68,7 @@ const SupervisorDashboard: React.FC = () => {
             </div>
 
             {!showReport ? (
-              <div className="flex-1 overflow-y-auto max-h-[70vh] rounded border border-gray-300">
+              <div className="flex-1 overflow-y-auto max-h-[70dvh] rounded border border-gray-300">
                 <table className="min-w-full table-auto border-collapse">
                   <thead className="bg-green-700 text-white">
                     <tr>
