@@ -92,9 +92,24 @@ const UserView: React.FC = () => {
   };
 
   const getCategoryLabel = (mainCategoryId: string | number, subcategoryId: string | number): string => {
-    const mainCat = categories[mainCategoryId];
-    const mainLabel = mainCat?.label || String(mainCategoryId);
-    const subLabel = mainCat?.subcategories?.[subcategoryId]?.label || String(subcategoryId);
+    let mainLabel = mainCategoryId;
+    let subLabel = subcategoryId;
+
+    for (const [, mainCat] of Object.entries(categories)) {
+      if (String(mainCat.id) === String(mainCategoryId)) {
+        mainLabel = mainCat.label;
+
+        for (const [, subCat] of Object.entries(mainCat.subcategories || {})) {
+          if (String(subCat.id) === String(subcategoryId)) {
+            subLabel = subCat.label;
+            break;
+          }
+        }
+
+        break;
+      }
+    }
+
     return `${mainLabel} / ${subLabel}`;
   };
 
