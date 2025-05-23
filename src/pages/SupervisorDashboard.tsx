@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
+import ReportView from "../components/ReportView";
+import { HistoryEntry } from "../types";
 
 interface LogEntry {
   id: number;
@@ -13,20 +15,40 @@ interface LogEntry {
 
 const SupervisorDashboard: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [showReportView, setShowReportView] = useState<boolean>(false);
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
-    axios.get("https://soil-3tik.onrender.com/API/logs.php")
-      .then(res => setLogs(res.data))
-      .catch(err => console.error(err));
+    axios
+      .get("https://soil-3tik.onrender.com/API/logs.php")
+      .then((res) => setLogs(res.data))
+      .catch((err) => console.error(err));
   }, []);
+
+  // Cast logs to HistoryEntry[], using allowed changeType values
+  const transformedLogs: HistoryEntry[] = logs.map((log) => ({
+    id: log.id,
+    name: log.description,
+    mainCategory: "",
+    subcategory: "",
+    quantity: 0,
+    unit: "",
+    harvestDate: new Date(log.timestamp).toISOString(),
+    notes: log.action_type,
+    predefined_item_id: 0,
+    changeType: "add", // using valid type instead of "log"
+    date: new Date(log.timestamp).toISOString(),
+  }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
       <div className="w-full max-w-4xl bg-white rounded-lg relative">
         <div
           className="absolute inset-0 rounded-lg"
-          style={{ background: "rgba(255, 255, 255, 0.45)", zIndex: 0, backdropFilter: "blur(8px)" }}
+          style={{
+            background: "rgba(255, 255, 255, 0.45)",
+            zIndex: 0,
+            backdropFilter: "blur(8px)",
+          }}
           aria-hidden="true"
         />
         <div className="relative z-10 flex flex-col min-h-screen">
@@ -35,14 +57,14 @@ const SupervisorDashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold">Operator Logs</h2>
               <button
-                className="bg-yellow-600 text-white px-3 py-2 rounded hover:bg-yellow-700"
-                onClick={() => setShowReportView(!showReportView)}
+                onClick={() => setShowReport(true)}
+                className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded"
               >
-                {showReportView ? "Back to Logs" : "Generate Report"}
+                Generate Report
               </button>
             </div>
 
-            {!showReportView ? (
+            {!showReport ? (
               <div className="flex-1 overflow-y-auto max-h-[70vh] rounded border border-gray-300">
                 <table className="min-w-full table-auto border-collapse">
                   <thead className="bg-green-700 text-white">
@@ -54,7 +76,7 @@ const SupervisorDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {logs.map(log => (
+                    {logs.map((log) => (
                       <tr key={log.id} className="border-b hover:bg-gray-100">
                         <td className="px-4 py-2">{log.user_id}</td>
                         <td className="px-4 py-2 capitalize">{log.action_type}</td>
@@ -64,24 +86,20 @@ const SupervisorDashboard: React.FC = () => {
                     ))}
                     {logs.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="text-center text-gray-500 py-4">No logs available</td>
+                        <td colSpan={4} className="text-center text-gray-500 py-4">
+                          No logs available
+                        </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
               </div>
             ) : (
-              <div className="bg-white p-6 border rounded shadow text-sm">
-                <h3 className="text-lg font-bold mb-4">Report Preview</h3>
-                <ul className="list-disc pl-5 space-y-2">
-                  {logs.map(log => (
-                    <li key={log.id}>
-                      <strong>User {log.user_id}</strong> {log.action_type} — {log.description} at {new Date(log.timestamp).toLocaleString()}
-                    </li>
-                  ))}
-                  {logs.length === 0 && <li>No log data available for report.</li>}
-                </ul>
-              </div>
+              <ReportView
+                historyEntries={transformedLogs}
+                categories={{}}
+                onClose={() => setShowReport(false)}
+              />
             )}
           </main>
           <Footer />
