@@ -212,7 +212,7 @@ const UserView: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-4">
-      <div className="w-full max-w-screen-lg bg-white backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95vh]">
+      <div className="w-full max-w-screen-lg bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95vh]">
         <div
           className="absolute inset-0 rounded-lg"
           style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
@@ -224,7 +224,7 @@ const UserView: React.FC = () => {
           <main className="flex-1 p-6 flex flex-col">
             <h2 className="text-2xl font-bold text-green-700">Welcome, User!</h2>
             <p className="text-gray-700 mt-2">You have read-only access to the system.</p>
-            <div className="flex-1 overflow-y-auto overflow-y-auto mt-4">
+            <div className="mt-4 rounded border border-gray-300 overflow-auto max-h-[60vh]">
               <InventoryTable items={items} categories={categories} viewMode={viewMode} />
             </div>
           </main>
