@@ -18,7 +18,7 @@ const Header: React.FC = () => {
           <img src="/logo3.png" alt="CWTS Logo" className="h-10" />
           <img src="/logo5.png" alt="Group Logo" className="h-10" />
           <img src="/logo4.png" alt="Talipapa Logo" className="h-10" />
-          <h1 className="text-xl font-bold text-white ml-4">VERGEL A BAUTISTA</h1>
+          <h1 className="text-xl font-bold text-white ml-4">BRGY TALIPAPA URBAN FARM AND MRF INVENTORY</h1>
           <div className="ml-auto relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
