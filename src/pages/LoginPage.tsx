@@ -36,7 +36,7 @@ const handleLogin = async (e: React.FormEvent) => {
         {/* Content layer */}
         <div className="relative z-10 p-6">
           <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-full max-w-sm space-y-4">
-            <h2 className="text-xl font-semibold text-center">Adelaida F. Bautista</h2>
+            <h2 className="text-xl font-semibold text-center">Login</h2>
             {error && <p className="text-red-600 text-sm">{error}</p>}
             <input type="text" placeholder="Username" value={username}
               onChange={(e) => setUsername(e.target.value)}
