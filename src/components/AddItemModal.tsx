@@ -16,7 +16,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
   const [subcategory, setSubcategory] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
-  const [unit, setUnit] = useState<Unit>('kg');
+  const [unit, setUnit] = useState<Unit>('Kgs');
   const [harvestDate, setHarvestDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
   const [predefinedItems, setPredefinedItems] = useState<PredefinedItem[]>([]);
@@ -49,7 +49,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
       setName(selectedItem.name);
       setUnit(selectedItem.unit);    } else {
       setName('');
-      setUnit('kg');
+      setUnit('Kgs');
     }
   };
 
@@ -244,9 +244,9 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
                   <input
                     type="radio"
                     name="unit"
-                    value="kg"
-                    checked={unit === 'kg'}
-                    onChange={() => setUnit('kg')}
+                    value="Kgs"
+                    checked={unit === 'Kgs'}
+                    onChange={() => setUnit('Kgs')}
                     className="h-4 w-4 text-green-600"
                   />
                   <span className="ml-2">Kg</span>
@@ -255,9 +255,9 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
                   <input
                     type="radio"
                     name="unit"
-                    value="pcs"
-                    checked={unit === 'pcs'}
-                    onChange={() => setUnit('pcs')}
+                    value="Pcs"
+                    checked={unit === 'Pcs'}
+                    onChange={() => setUnit('Pcs')}
                     className="h-4 w-4 text-green-600"
                   />
                   <span className="ml-2">pcs</span>

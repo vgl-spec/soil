@@ -185,7 +185,7 @@ export const createPredefinedItem = async (
   categoryName: string,
   subcategoryName: string,
   itemName: string,
-  unit: string = 'kg'
+  unit: string = 'Kgs'
 ): Promise<{ success: boolean; message: string; id?: number }> => {
   try {
     const mainCategoryId = getCategoryIdByName(categories, categoryName);

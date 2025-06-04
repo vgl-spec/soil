@@ -4,7 +4,7 @@
 export type ViewMode = 'consolidated' | 'history';
 
 // Unit type
-export type Unit = 'kg' | 'pcs';
+export type Unit = 'Kgs' | 'Pcs';
 
 // Predefined item type
 export interface PredefinedItem {
