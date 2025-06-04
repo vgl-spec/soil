@@ -129,28 +129,38 @@ const OperatorDashboard: React.FC = () => {
 
   // Filtered items
   const filterItems = <T extends { name: string; mainCategory: string | number; subcategory: string | number; date?: string }>(
-    items: T[]
+      items: T[]
   ) => {
-    return items.filter((item) => {
-      const nameMatch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const categoryMatch = !selectedCategory || item.mainCategory === selectedCategory;
-      const subcategoryMatch = !selectedSubcategory || item.subcategory === selectedSubcategory;
-      const dateMatch = (() => {
-        if (selectedDateRange === "all" || !item.date) return true;
-        const itemDate = new Date(item.date);
-        const now = new Date();
-        if (selectedDateRange === "today") {
-          return itemDate.toDateString() === now.toDateString();
-        } else if (selectedDateRange === "7d") {
-          return now.getTime() - itemDate.getTime() <= 7 * 24 * 60 * 60 * 1000;
-        } else if (selectedDateRange === "30d") {
-          return now.getTime() - itemDate.getTime() <= 30 * 24 * 60 * 60 * 1000;
-        }
-        return true;
-      })();
-      return nameMatch && categoryMatch && subcategoryMatch && dateMatch;
-    });
-  };
+      return items.filter((item) => {
+        const nameMatch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+        // Finding the category ID
+        const categoryMatch = !selectedCategory ||
+          (Object.entries(categories).find(([name, cat]) =>
+            name === selectedCategory && cat.id === Number(item.mainCategory)
+          ) !== undefined);
+        
+        // Subcategory matching similarly
+        const subcategoryMatch = !selectedSubcategory || 
+          Number(item.subcategory) === Number(selectedSubcategory);
+        
+        const dateMatch = (() => {
+          if (selectedDateRange === "all" || !item.date) return true;
+          const itemDate = new Date(item.date);
+          const now = new Date();
+          if (selectedDateRange === "today") {
+            return itemDate.toDateString() === now.toDateString();
+          } else if (selectedDateRange === "7d") {
+            return now.getTime() - itemDate.getTime() <= 7 * 24 * 60 * 60 * 1000;
+          } else if (selectedDateRange === "30d") {
+            return now.getTime() - itemDate.getTime() <= 30 * 24 * 60 * 60 * 1000;
+          }
+          return true;
+        })();
+        
+        return nameMatch && categoryMatch && subcategoryMatch && dateMatch;
+      });
+    };
 
   const filteredConsolidatedItems = filterItems(consolidatedItems);
   const filteredHistoryItems = filterItems(historyEntries);
@@ -214,8 +224,8 @@ const OperatorDashboard: React.FC = () => {
                       }}
                     >
                       <option value="">All</option>
-                      {Object.entries(categories).map(([key, cat]) => (
-                        <option key={key} value={key}>{cat.label}</option>
+                      {Object.entries(categories).map(([name, cat]) => (
+                        <option key={name} value={name}>{cat.label}</option>
                       ))}
                     </select>
                   </div>
