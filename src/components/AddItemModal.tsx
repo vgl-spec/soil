@@ -9,7 +9,6 @@ interface AddItemModalProps {
   onClose: () => void;
   onAddItem: (entry: HistoryEntry) => void;
 }
-const API_BASE = 'https://soil-3tik.onrender.com/API/';
 const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddItem }) => {
   const transformedCategories: Category = categories || {};
 
@@ -17,7 +16,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
   const [subcategory, setSubcategory] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
-  const [unit, setUnit] = useState<Unit>('Kg');
+  const [unit, setUnit] = useState<Unit>('kg');
   const [harvestDate, setHarvestDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
   const [predefinedItems, setPredefinedItems] = useState<PredefinedItem[]>([]);
@@ -48,10 +47,9 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
     if (e.target.value) {
       const selectedItem = JSON.parse(e.target.value);
       setName(selectedItem.name);
-      setUnit(selectedItem.unit);
-    } else {
+      setUnit(selectedItem.unit);    } else {
       setName('');
-      setUnit('Kg');
+      setUnit('kg');
     }
   };
 
@@ -242,14 +240,13 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Unit:
               </label>
-              <div className="flex gap-4">
-                <label className="inline-flex items-center">
+              <div className="flex gap-4">                <label className="inline-flex items-center">
                   <input
                     type="radio"
                     name="unit"
-                    value="Kg"
-                    checked={unit === 'Kg'}
-                    onChange={() => setUnit('Kg')}
+                    value="kg"
+                    checked={unit === 'kg'}
+                    onChange={() => setUnit('kg')}
                     className="h-4 w-4 text-green-600"
                   />
                   <span className="ml-2">Kg</span>
@@ -258,12 +255,12 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
                   <input
                     type="radio"
                     name="unit"
-                    value="Pcs"
-                    checked={unit === 'Pcs'}
-                    onChange={() => setUnit('Pcs')}
+                    value="pcs"
+                    checked={unit === 'pcs'}
+                    onChange={() => setUnit('pcs')}
                     className="h-4 w-4 text-green-600"
                   />
-                  <span className="ml-2">Pcs</span>
+                  <span className="ml-2">pcs</span>
                 </label>
               </div>
             </div>
