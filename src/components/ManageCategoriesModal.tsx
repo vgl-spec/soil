@@ -21,7 +21,7 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
   );
   const [newSubcategoryName, setNewSubcategoryName] = useState("");
   const [newItemName, setNewItemName] = useState("");
-  const [newItemUnit, setNewItemUnit] = useState("Kg");
+  const [newItemUnit, setNewItemUnit] = useState("kg");
 
   useEffect(() => {
     setSelectedSubcategory(null);
@@ -58,7 +58,7 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
     const main_category_id = workingCategories[categoryType].id;
     const name = key;
     const label = newSubcategoryName;
-    const unit = "Kg"; // or let user select
+    const unit = "kg"; // or let user select
 
     try {
       console.log("Sending request to add_subcategory.php with:", {
@@ -286,9 +286,8 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
             className="border rounded px-2 py-1"
             value={newItemUnit}
             onChange={(e) => setNewItemUnit(e.target.value)}
-            disabled={!selectedSubcategory}
-          >
-            <option value="Kg">Kg</option>
+            disabled={!selectedSubcategory}          >
+            <option value="kg">Kg</option>
             <option value="pcs">pcs</option>
           </select>
           <button
