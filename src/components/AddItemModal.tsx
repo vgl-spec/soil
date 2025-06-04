@@ -16,7 +16,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
   const [subcategory, setSubcategory] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
-  const [unit, setUnit] = useState<Unit>('Kgs');
+  const [unit, setUnit] = useState<Unit>('kg');
   const [harvestDate, setHarvestDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
   const [predefinedItems, setPredefinedItems] = useState<PredefinedItem[]>([]);
@@ -49,7 +49,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
       setName(selectedItem.name);
       setUnit(selectedItem.unit);    } else {
       setName('');
-      setUnit('Kgs');
+      setUnit('kg');
     }
   };
 
@@ -244,20 +244,20 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
                   <input
                     type="radio"
                     name="unit"
-                    value="Kgs"
-                    checked={unit === 'Kgs'}
-                    onChange={() => setUnit('Kgs')}
+                    value="kg"
+                    checked={unit === 'kg'}
+                    onChange={() => setUnit('kg')}
                     className="h-4 w-4 text-green-600"
                   />
-                  <span className="ml-2">Kg</span>
+                  <span className="ml-2">kg</span>
                 </label>
                 <label className="inline-flex items-center">
                   <input
                     type="radio"
                     name="unit"
-                    value="Pcs"
-                    checked={unit === 'Pcs'}
-                    onChange={() => setUnit('Pcs')}
+                    value="pcs"
+                    checked={unit === 'pcs'}
+                    onChange={() => setUnit('pcs')}
                     className="h-4 w-4 text-green-600"
                   />
                   <span className="ml-2">pcs</span>
