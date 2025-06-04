@@ -3,6 +3,7 @@ import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { ConsolidatedItem, Category } from "../types";
+import { getCategoryLabel } from "../utils/inventoryUtils";
 
 const UserView: React.FC = () => {
   const [items, setItems] = useState<ConsolidatedItem[]>([]);
@@ -88,30 +89,7 @@ const UserView: React.FC = () => {
       return dateObj.toLocaleDateString();
     } catch {
       return "-";
-    }
-  };
-
-  const getCategoryLabel = (mainCategoryId: string | number, subcategoryId: string | number): string => {
-    let mainLabel = mainCategoryId;
-    let subLabel = subcategoryId;
-
-    for (const [, mainCat] of Object.entries(categories)) {
-      if (String(mainCat.id) === String(mainCategoryId)) {
-        mainLabel = mainCat.label;
-
-        for (const [, subCat] of Object.entries(mainCat.subcategories || {})) {
-          if (String(subCat.id) === String(subcategoryId)) {
-            subLabel = subCat.label;
-            break;
-          }
-        }
-
-        break;
-      }
-    }
-
-    return `${mainLabel} / ${subLabel}`;
-  };
+    }  };
 
   return (
     <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-4">
@@ -148,7 +126,7 @@ const UserView: React.FC = () => {
                       items.map((item) => (
                         <tr key={`item-${item.id}-${item.predefined_item_id}`} className="border-b border-gray-200 hover:bg-gray-50">
                           <td className="p-3 w-1/4">{item.name}</td>
-                          <td className="p-3 w-1/4">{getCategoryLabel(item.mainCategory, item.subcategory)}</td>
+                          <td className="p-3 w-1/4">{getCategoryLabel(categories, item.mainCategory, item.subcategory)}</td>
                           <td className="p-3 font-medium w-1/4">{item.quantity} {item.unit}</td>
                           <td className="p-3 w-1/4">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</td>
                         </tr>

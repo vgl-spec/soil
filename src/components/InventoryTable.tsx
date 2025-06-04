@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { History } from 'lucide-react';
-import { ConsolidatedItem, HistoryEntry, Category, ViewMode,} from '../types';
+import { ConsolidatedItem, HistoryEntry, Category, ViewMode } from '../types';
+import { getCategoryLabel } from '../utils/inventoryUtils';
 
 // Add this function to safely format dates
 const safeFormatDate = (date: string | number | null | undefined) => {
@@ -44,30 +45,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
   onViewHistory
 }) => {
   const itemsArray = Array.isArray(items) ? items : [];
-
-const getCategoryLabel = (mainCategoryId: string | number, subcategoryId: string | number) => {
-  let mainLabel = mainCategoryId;
-  let subLabel = subcategoryId;
-
-  for (const [, mainCat] of Object.entries(categories)) {
-    if (String(mainCat.id) === String(mainCategoryId)) {
-      mainLabel = mainCat.label;
-
-      for (const [, subCat] of Object.entries(mainCat.subcategories || {})) {
-        if (String(subCat.id) === String(subcategoryId)) {
-          subLabel = subCat.label;
-          break;
-        }
-      }
-
-      break;
-    }
-  }
-
-  return `${mainLabel} / ${subLabel}`;
-};
-
-
 
   // useEffect(() => {
   //   console.log('All items:', itemsArray);
@@ -124,7 +101,7 @@ const getCategoryLabel = (mainCategoryId: string | number, subcategoryId: string
                   className="border-b border-gray-200 hover:bg-gray-50"
                 >
                   <td className="p-3">{item.name}</td>
-                  <td className="p-3">{getCategoryLabel(item.mainCategory, item.subcategory)}</td>
+                  <td className="p-3">{getCategoryLabel(categories, item.mainCategory, item.subcategory)}</td>
                   <td className="p-3">
                     <span className="font-medium">{item.quantity} {item.unit}</span>
                   </td>
@@ -165,7 +142,7 @@ const getCategoryLabel = (mainCategoryId: string | number, subcategoryId: string
                 >
                   <td className="p-3">{safeFormatDate(entry.date)}</td>
                   <td className="p-3">{entry.name}</td>
-                  <td className="p-3">{getCategoryLabel(entry.mainCategory, entry.subcategory)}</td>
+                  <td className="p-3">{getCategoryLabel(categories, entry.mainCategory, entry.subcategory)}</td>
                   <td className="p-3">
                     {entry.quantity > 0 ? (
                       <span className="text-green-700 font-medium">

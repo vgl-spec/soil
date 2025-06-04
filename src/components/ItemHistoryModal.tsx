@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { ConsolidatedItem, HistoryEntry, Category } from '../types';
-import { formatDate } from '../utils/inventoryUtils';
+import { formatDate, getCategoryLabel } from '../utils/inventoryUtils';
 
 interface ItemHistoryModalProps {
   item: ConsolidatedItem;
@@ -17,13 +17,6 @@ const ItemHistoryModal: React.FC<ItemHistoryModalProps> = ({
   onClose 
 }) => {
   console.log("historyEntries passed to modal:", historyEntries);
-
-  // Get category label
-  const getCategoryLabel = (mainCategory: string, subcategory: string): string => {
-    const mainCategoryLabel = categories[mainCategory]?.label || mainCategory;
-    const subcategoryLabel = categories[mainCategory]?.subcategories[subcategory]?.label || subcategory;
-    return `${mainCategoryLabel} / ${subcategoryLabel}`;
-  };
 
   // Sort history entries by date (newest first)
   const sortedEntries = [...historyEntries].sort(
@@ -44,7 +37,7 @@ const ItemHistoryModal: React.FC<ItemHistoryModalProps> = ({
         
         <div className="mb-6">
           <p className="font-medium text-lg">{item.name}</p>
-          <p className="text-gray-600">{getCategoryLabel(item.mainCategory, item.subcategory)}</p>
+          <p className="text-gray-600">{getCategoryLabel(categories, item.mainCategory, item.subcategory)}</p>
           <p className="text-gray-600">Current Stock: {item.quantity} {item.unit}</p>
         </div>
         

@@ -73,11 +73,15 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
       alert("Please enter a valid quantity.");
       setIsSubmitting(false);
       return;
-    }
+    }    try {
+      // Check if the item exists in predefined_items (categories is now required)
+      if (!categories || Object.keys(categories).length === 0) {
+        alert('Categories not loaded. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
 
-    try {
-      // Check if the item exists in predefined_items
-      const existing = await checkItemExists(name, mainCategory, subcategory);
+      const existing = await checkItemExists(name, mainCategory, subcategory, categories);
 
       if (!existing || !existing.id) {
         alert('This item does not exist in predefined items. Please add it as a predefined item first.');
