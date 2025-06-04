@@ -27,9 +27,7 @@ const OperatorDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  const [selectedDateRange, setSelectedDateRange] = useState<string>("all"); // "all", "today", "7d", etc.
-
-  // Fetch categories
+  const [selectedDateRange, setSelectedDateRange] = useState<string>("all"); // "all", "today", "7d", etc.  // Fetch categories
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -47,9 +45,7 @@ const OperatorDashboard: React.FC = () => {
   const fetchItems = async () => {
     try {
       const res = await axios.get("https://soil-3tik.onrender.com/API/items.php");
-      const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
-      
-      if (data.items && Array.isArray(data.items)) {
+      const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;      if (data.items && Array.isArray(data.items)) {
         const itemsWithDates = data.items.map((item: ConsolidatedItem) => {
           const itemHistory = data.history.filter((h: HistoryEntry) => 
             h.predefined_item_id === item.predefined_item_id
@@ -96,17 +92,9 @@ const OperatorDashboard: React.FC = () => {
       setConsolidatedItems([]);
     }
   };
-
   useEffect(() => {
     fetchItems();
   }, []);
-
-  const getCategoryLabel = (mainCategory: string | number, subcategory: string | number) => {
-    const mainCat = categories[mainCategory];
-    const mainLabel = mainCat?.label || mainCategory;
-    const subLabel = mainCat?.subcategories?.[subcategory]?.label || subcategory;
-    return `${mainLabel}/${subLabel}`;
-  };
 
   const handleReduceStock = (item: ConsolidatedItem) => {
     setSelectedItem(item);
@@ -125,24 +113,34 @@ const OperatorDashboard: React.FC = () => {
     setSelectedItem(item);
     setShowHistoryModal(true);
     setSelectedHistory(itemHistory);
-  };
-
-  // Filtered items
+  };  // Filtered items
   const filterItems = <T extends { name: string; mainCategory: string | number; subcategory: string | number; date?: string }>(
       items: T[]
   ) => {
       return items.filter((item) => {
         const nameMatch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
 
-        // Finding the category ID
-        const categoryMatch = !selectedCategory ||
-          (Object.entries(categories).find(([name, cat]) =>
-            name === selectedCategory && cat.id === Number(item.mainCategory)
-          ) !== undefined);
+        // Fix category matching - item.mainCategory is a numeric ID, selectedCategory is a string key
+        let categoryMatch = !selectedCategory;
+        if (selectedCategory) {
+          // Find the category by matching the numeric ID with the category's ID
+          const selectedCategoryData = categories[selectedCategory];
+          if (selectedCategoryData) {
+            categoryMatch = Number(item.mainCategory) === Number(selectedCategoryData.id);
+          }
+        }
         
-        // Subcategory matching similarly
-        const subcategoryMatch = !selectedSubcategory || 
-          Number(item.subcategory) === Number(selectedSubcategory);
+        // Fix subcategory matching - item.subcategory is a numeric ID, selectedSubcategory is a string key
+        let subcategoryMatch = !selectedSubcategory;
+        if (selectedSubcategory && selectedCategory) {
+          const selectedCategoryData = categories[selectedCategory];
+          if (selectedCategoryData && selectedCategoryData.subcategories) {
+            const subcategoryData = selectedCategoryData.subcategories[selectedSubcategory];
+            if (subcategoryData) {
+              subcategoryMatch = Number(item.subcategory) === Number(subcategoryData.id);
+            }
+          }
+        }
         
         const dateMatch = (() => {
           if (selectedDateRange === "all" || !item.date) return true;
