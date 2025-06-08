@@ -11,29 +11,33 @@ if (file_exists($envFile)) {
         if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
             list($key, $value) = explode('=', $line, 2);
             $_ENV[trim($key)] = trim($value);
+            putenv(trim($key) . '=' . trim($value));
         }
     }
 }
 
-// Get database URL from environment variable
-$databaseUrl = $_ENV['DATABASE_URL'] ?? getenv('DATABASE_URL');
-error_log("Database URL: " . preg_replace('/postgresql:\/\/[^:]+:[^@]+@/', 'postgresql://user:pass@', $databaseUrl));
+// Set SSL certificate path and mode
+$sslCertPath = realpath(__DIR__ . '/../../certificates/root.crt');
+if (!$sslCertPath) {
+    error_log("SSL certificate not found at: " . __DIR__ . '/../../certificates/root.crt');
+    die("SSL certificate not found");
+}
+error_log("Using SSL certificate: " . $sslCertPath);
 
-// Parse the URI
-$dbopts = parse_url($databaseUrl);
-$host   = $dbopts['host'];
-$port   = 5432; // Use session pooler port
-$user   = $dbopts['user'];
-$pass   = $dbopts['pass'];
-$dbname = ltrim($dbopts['path'], '/');
+// Direct database parameters
+$host = 'aws-0-ap-southeast-1.pooler.supabase.com';
+$port = 5432;
+$dbname = 'postgres';
+$user = 'postgres.yigklskjcbgfnxklhwir';
+$pass = '1rN7Wq8WOwGnZtIL';
 
-// Build DSN and connect with pooler settings
-$dsn = "pgsql:host={$host};port={$port};dbname={$dbname};sslmode=require;options='--client-min-messages=warning';application_name='soil_inventory';pgbouncer=session";
+// Build DSN with session pooler settings
+$dsn = "pgsql:host={$host};port={$port};dbname={$dbname};sslmode=require;options='--application-name=soil_inventory --client-min-messages=warning'";
 
 try {
     error_log("Attempting connection to: {$host}:{$port}");
     $conn = new PDO($dsn, $user, $pass, [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
 } catch (PDOException $e) {
