@@ -53,20 +53,18 @@ if (!$username || !$password) {
     exit;
 }
 
-$sql = "SELECT * FROM users WHERE username = ?";
+$sql = "SELECT * FROM users WHERE username = $1";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $username);
-$stmt->execute();
-$result = $stmt->get_result();
+$stmt->execute([$username]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if ($user = $result->fetch_assoc()) {
+if ($user) {
     // ✅ Secure password comparison using password_verify
     if (password_verify($password, $user['password'])) {
         $_SESSION['user'] = $user;
 
-        $log = $conn->prepare("INSERT INTO action_logs (user_id, action_type, description) VALUES (?, 'login', 'User logged in')");
-        $log->bind_param("i", $user['id']);
-        $log->execute();
+        $log = $conn->prepare("INSERT INTO action_logs (user_id, action_type, description) VALUES ($1, 'login', 'User logged in')");
+        $log->execute([$user['id']]);
 
         echo json_encode(["success" => true, "role" => $user['role'], "id" => $user['id']]);
     } else {

@@ -46,45 +46,36 @@ try {
 
     if (!$itemId || !$quantity) {
         throw new Exception("Item ID and quantity are required");
-    }
-
-    // Fetch predefined_item_id from the items table
-    $predefinedItemIdQuery = "SELECT predefined_item_id FROM items WHERE id = ?";
+    }    // Fetch predefined_item_id from the items table
+    $predefinedItemIdQuery = "SELECT predefined_item_id FROM items WHERE id = $1";
     $stmt = $conn->prepare($predefinedItemIdQuery);
-    $stmt->bind_param("i", $itemId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$itemId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if ($row = $result->fetch_assoc()) {
+    if ($row) {
         $predefinedItemId = $row['predefined_item_id'];
     } else {
         throw new Exception("Item not found");
     }
 
     // Update the items table
-    $updateItemQuery = "UPDATE items SET quantity = quantity + ?, harvest_date = ? WHERE id = ?";
+    $updateItemQuery = "UPDATE items SET quantity = quantity + $1, harvest_date = $2 WHERE id = $3";
     $stmt = $conn->prepare($updateItemQuery);
-    $stmt->bind_param("isi", $quantity, $harvestDate, $itemId);
-    $stmt->execute();
+    $result = $stmt->execute([$quantity, $harvestDate, $itemId]);
 
-    if ($stmt->affected_rows === 0) {
+    if ($stmt->rowCount() === 0) {
         throw new Exception("Failed to update item quantity");
-    }
-
-    // Insert into item_history table
-   // Insert into item_history table
-    $insertHistoryQuery = "INSERT INTO item_history (predefined_item_id, quantity, harvest_date, notes, change_type, date) VALUES (?, ?, ?, ?, 'increase', NOW())";
+    }    // Insert into item_history table
+    $insertHistoryQuery = "INSERT INTO item_history (predefined_item_id, quantity, harvest_date, notes, change_type, date) VALUES ($1, $2, $3, $4, 'increase', CURRENT_TIMESTAMP)";
     $stmt = $conn->prepare($insertHistoryQuery);
-    $stmt->bind_param("iiss", $predefinedItemId, $quantity, $harvestDate, $notes);
-    $stmt->execute();
+    $stmt->execute([$predefinedItemId, $quantity, $harvestDate, $notes]);
 
     // Insert into action_logs table
-    
     $insertLogQuery = "INSERT INTO action_logs (user_id, action_type, description, timestamp) 
-                      VALUES (?, 'increase_stock', ?, NOW())";
+                      VALUES ($1, 'increase_stock', $2, CURRENT_TIMESTAMP)";
     $logDescription = "Increased stock for item ID: $itemId by $quantity units.";
     $stmt = $conn->prepare($insertLogQuery);
-    $stmt->bind_param("is", $userId, $logDescription);
+    $stmt->execute([$userId, $logDescription]);
     $stmt->execute();
 
     echo json_encode(["success" => true, "message" => "Stock increased and logged successfully"]);

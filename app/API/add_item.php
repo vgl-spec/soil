@@ -46,42 +46,35 @@ try {
     $quantity = $data['quantity'];
     $harvest_date = !empty($data['harvest_date']) ? $data['harvest_date'] : null;
     $notes = isset($data['notes']) && trim($data['notes']) !== '' ? $data['notes'] : 'Item Added';
-    $created_at = date('Y-m-d H:i:s');
-
-    // Check if the item already exists
-    $checkQuery = "SELECT id, quantity FROM items WHERE predefined_item_id = ?";
+    $created_at = date('Y-m-d H:i:s');    // Check if the item already exists
+    $checkQuery = "SELECT id, quantity FROM items WHERE predefined_item_id = $1";
     $stmt = $conn->prepare($checkQuery);
-    $stmt->bind_param("i", $predefined_item_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $result = $stmt->execute([$predefined_item_id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($row = $result->fetch_assoc()) {
+    if ($row) {
         // Item exists, update its quantity and harvest date
         $new_quantity = $row['quantity'] + $quantity;
-        $updateQuery = "UPDATE items SET quantity = ?, harvest_date = ?, updated_at = NOW() WHERE id = ?";
+        $updateQuery = "UPDATE items SET quantity = $1, harvest_date = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3";
         $updateStmt = $conn->prepare($updateQuery);
-        $updateStmt->bind_param("isi", $new_quantity, $harvest_date, $row['id']);
-        if (!$updateStmt->execute()) {
-            throw new Exception("Failed to update item: " . $updateStmt->error);
+        if (!$updateStmt->execute([$new_quantity, $harvest_date, $row['id']])) {
+            throw new Exception("Failed to update item");
         }
         $item_id = $row['id'];
     } else {
         // Item does not exist, insert a new row
-        $insertItemQuery = "INSERT INTO items (predefined_item_id, quantity, harvest_date, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())";
+        $insertItemQuery = "INSERT INTO items (predefined_item_id, quantity, harvest_date, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id";
         $insertStmt = $conn->prepare($insertItemQuery);
-        $insertStmt->bind_param("iis", $predefined_item_id, $quantity, $harvest_date);
+        $insertStmt->execute([$predefined_item_id, $quantity, $harvest_date]);
         if (!$insertStmt->execute()) {
             throw new Exception("Failed to add item: " . $insertStmt->error);
         }
         $item_id = $conn->insert_id;
-    }
-
-    // Insert into item_history with harvest_date
-    $historyQuery = "INSERT INTO item_history (predefined_item_id, quantity, harvest_date, notes, change_type, date) VALUES (?, ?, ?, ?, 'add', ?)";
+    }    // Insert into item_history with harvest_date
+    $historyQuery = "INSERT INTO item_history (predefined_item_id, quantity, harvest_date, notes, change_type, date) VALUES ($1, $2, $3, $4, 'add', $5)";
     $historyStmt = $conn->prepare($historyQuery);
-    $historyStmt->bind_param("iisss", $predefined_item_id, $quantity, $harvest_date, $notes, $created_at);
-    if (!$historyStmt->execute()) {
-        throw new Exception("Failed to add history: " . $historyStmt->error);
+    if (!$historyStmt->execute([$predefined_item_id, $quantity, $harvest_date, $notes, $created_at])) {
+        throw new Exception("Failed to add history");
     }
 
     $conn->commit();

@@ -20,17 +20,14 @@ $user_id = $_GET['user_id'] ?? null;
 $logs = [];
 
 if ($user_id) {
-  $stmt = $conn->prepare("SELECT * FROM action_logs WHERE user_id = ? ORDER BY timestamp DESC");
-  $stmt->bind_param("i", $user_id);
-  $stmt->execute();
-  $result = $stmt->get_result();
-
-  while ($row = $result->fetch_assoc()) {
+  $stmt = $conn->prepare("SELECT * FROM action_logs WHERE user_id = $1 ORDER BY timestamp DESC");
+  $stmt->execute([$user_id]);
+  while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $logs[] = $row;
   }
 } else {
-  $result = $conn->query("SELECT * FROM action_logs ORDER BY timestamp DESC");
-  while ($row = $result->fetch_assoc()) {
+  $stmt = $conn->query("SELECT * FROM action_logs ORDER BY timestamp DESC");
+  while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $logs[] = $row;
   }
 }

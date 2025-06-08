@@ -6,19 +6,18 @@ header("Content-Type: application/json");
 
 require_once "db.php";
 
-try {
-    // Fetch Main Categories
+try {    // Fetch Main Categories
     $mainQuery = "SELECT * FROM categories";
-    $mainResult = $conn->query($mainQuery);
-    if (!$mainResult) {
-        throw new Exception("Main categories query failed: " . $conn->error);
+    $mainStmt = $conn->query($mainQuery);
+    if (!$mainStmt) {
+        throw new Exception("Main categories query failed");
     }
 
     $structured = [];
 
-    while ($cat = $mainResult->fetch_assoc()) {
+    while ($cat = $mainStmt->fetch(PDO::FETCH_ASSOC)) {
         $structured[$cat['name']] = [
-            "id" => $cat['id'],
+            "id" => (int)$cat['id'],
             "label" => $cat['label'],
             "subcategories" => []
         ];
@@ -26,22 +25,22 @@ try {
 
     // Fetch Subcategories
     $subQuery = "SELECT * FROM subcategories";
-    $subResult = $conn->query($subQuery);
-    if (!$subResult) {
-        throw new Exception("Subcategories query failed: " . $conn->error);
+    $subStmt = $conn->query($subQuery);
+    if (!$subStmt) {
+        throw new Exception("Subcategories query failed");
     }
 
-    $subcategories = [];
-    while ($sub = $subResult->fetch_assoc()) {
+    $subcategories = [];    while ($sub = $subStmt->fetch(PDO::FETCH_ASSOC)) {
         $mainId = $sub['category_id'];
-        $mainNameQuery = "SELECT name FROM categories WHERE id = $mainId";
-        $mainNameRes = $conn->query($mainNameQuery);
-        $mainNameRow = $mainNameRes->fetch_assoc();
+        $mainNameQuery = "SELECT name FROM categories WHERE id = $1";
+        $mainNameStmt = $conn->prepare($mainNameQuery);
+        $mainNameStmt->execute([$mainId]);
+        $mainNameRow = $mainNameStmt->fetch(PDO::FETCH_ASSOC);
         $mainName = $mainNameRow['name'];
 
         $subcategories[$sub['id']] = $sub['name'];
         $structured[$mainName]["subcategories"][$sub['name']] = [
-            "id" => $sub['id'],
+            "id" => (int)$sub['id'],
             "label" => $sub['label'],
             "unit" => $sub['unit'],
             "predefinedItems" => []
@@ -50,20 +49,19 @@ try {
 
     // Fetch Predefined Items
     $itemQuery = "SELECT * FROM predefined_items";
-    $itemResult = $conn->query($itemQuery);
-    if (!$itemResult) {
-        throw new Exception("Predefined items query failed: " . $conn->error);
-    }
-
-    while ($item = $itemResult->fetch_assoc()) {
+    $itemStmt = $conn->query($itemQuery);
+    if (!$itemStmt) {
+        throw new Exception("Predefined items query failed");
+    }    while ($item = $itemStmt->fetch(PDO::FETCH_ASSOC)) {
         $subId = $item['subcat_id'];
         $mainId = $item['main_category_id'];
 
         if (isset($subcategories[$subId])) {
             $subName = $subcategories[$subId];
-            $mainNameQuery = "SELECT name FROM categories WHERE id = $mainId";
-            $mainNameRes = $conn->query($mainNameQuery);
-            $mainNameRow = $mainNameRes->fetch_assoc();
+            $mainNameQuery = "SELECT name FROM categories WHERE id = $1";
+            $mainNameStmt = $conn->prepare($mainNameQuery);
+            $mainNameStmt->execute([$mainId]);
+            $mainNameRow = $mainNameStmt->fetch(PDO::FETCH_ASSOC);
             $mainName = $mainNameRow['name'];
 
             $structured[$mainName]["subcategories"][$subName]["predefinedItems"][] = [

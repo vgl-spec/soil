@@ -25,13 +25,14 @@ if (!$main_category_id || !$name || !$label) {
     exit;
 }
 
-// FIX: Use the correct table and column names
-$stmt = $conn->prepare("INSERT INTO subcategories (category_id, name, label, unit) VALUES (?, ?, ?, ?)");
-$stmt->bind_param("isss", $main_category_id, $name, $label, $unit);
+// Use the correct table and column names with PostgreSQL syntax
+$stmt = $conn->prepare("INSERT INTO subcategories (category_id, name, label, unit) VALUES ($1, $2, $3, $4) RETURNING id");
+$result = $stmt->execute([$main_category_id, $name, $label, $unit]);
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if ($stmt->execute()) {
-    echo json_encode(['success' => true, 'id' => $conn->insert_id]);
+if ($row) {
+    echo json_encode(['success' => true, 'id' => $row['id']]);
 } else {
-    echo json_encode(['success' => false, 'message' => $stmt->error]);
+    echo json_encode(['success' => false, 'message' => 'Failed to insert subcategory']);
 }
 ?>

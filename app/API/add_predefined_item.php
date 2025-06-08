@@ -26,25 +26,25 @@ if (!$main_category_id || !$subcat_id || !$name) {
 }
 
 // Check if item already exists
-$checkQuery = "SELECT id FROM predefined_items WHERE main_category_id = ? AND subcat_id = ? AND name = ?";
+$checkQuery = "SELECT id FROM predefined_items WHERE main_category_id = $1 AND subcat_id = $2 AND name = $3";
 $stmt = $conn->prepare($checkQuery);
-$stmt->bind_param("iis", $main_category_id, $subcat_id, $name);
-$stmt->execute();
-$stmt->store_result();
-if ($stmt->num_rows > 0) {
+$result = $stmt->execute([$main_category_id, $subcat_id, $name]);
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if ($row) {
     echo json_encode(['success' => false, 'message' => 'Predefined item already exists']);
     exit;
 }
-$stmt->close();
 
 // Insert new predefined item
-$insertQuery = "INSERT INTO predefined_items (main_category_id, subcat_id, name, unit) VALUES (?, ?, ?, ?)";
+$insertQuery = "INSERT INTO predefined_items (main_category_id, subcat_id, name, unit) VALUES ($1, $2, $3, $4) RETURNING id";
 $stmt = $conn->prepare($insertQuery);
-$stmt->bind_param("iiss", $main_category_id, $subcat_id, $name, $unit);
+$result = $stmt->execute([$main_category_id, $subcat_id, $name, $unit]);
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if ($stmt->execute()) {
-    echo json_encode(['success' => true, 'id' => $conn->insert_id]);
+if ($row) {
+    echo json_encode(['success' => true, 'id' => $row['id']]);
 } else {
-    echo json_encode(['success' => false, 'message' => $stmt->error]);
+    echo json_encode(['success' => false, 'message' => 'Failed to insert item']);
 }
 ?>

@@ -46,15 +46,16 @@ try {
         error_log("DB Connection Error: " . $conn->connect_error);
         throw new Exception("Connection failed: " . $conn->connect_error);
     }
-    error_log("DB connected successfully");
-
-    // Query current inventory with NULLIF to avoid invalid dates
+    error_log("DB connected successfully");    // Query current inventory
     $query = "
 SELECT
     i.id,
     i.predefined_item_id,
     i.quantity,
-    STR_TO_DATE(NULLIF(CAST(i.harvest_date AS CHAR), '0000-00-00'), '%Y-%m-%d') AS harvest_date,
+    CASE 
+        WHEN i.harvest_date IS NULL OR i.harvest_date = '0001-01-01' THEN NULL 
+        ELSE i.harvest_date::date 
+    END AS harvest_date,
     i.created_at,
     i.updated_at,
     p.name,
@@ -69,13 +70,12 @@ ORDER BY i.created_at DESC;
     error_log("Executing query: " . $query);
     $result = $conn->query($query);
     if (!$result) {
-        error_log("Query failed: " . $conn->error);
-        throw new Exception("Items query failed: " . $conn->error);
+        error_log("Query failed");
+        throw new Exception("Items query failed");
     }
     error_log("First query executed successfully");
 
-    $items = [];
-    while ($row = $result->fetch_assoc()) {
+    $items = [];    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
         $items[] = [
             "id" => (int)$row['id'],
             "predefined_item_id" => (int)$row['predefined_item_id'],
@@ -84,12 +84,10 @@ ORDER BY i.created_at DESC;
             "subcategory" => $row['subcategory'],
             "quantity" => (int)$row['quantity'],
             "unit" => $row['unit'],
-            "harvestDate" => $row['harvest_date'] ? date('Y-m-d', strtotime($row['harvest_date'])) : null
+            "harvestDate" => $row['harvest_date']
         ];
     }
-    error_log("Fetched " . count($items) . " items");
-
-    // Query full history
+    error_log("Fetched " . count($items) . " items");    // Query full history
     $historyQuery = "
 SELECT
     h.id,
@@ -98,7 +96,10 @@ SELECT
     h.notes,
     h.change_type,
     h.date,
-    STR_TO_DATE(NULLIF(CAST(h.harvest_date AS CHAR), '0000-00-00'), '%Y-%m-%d') AS harvest_date,
+    CASE 
+        WHEN h.harvest_date IS NULL OR h.harvest_date = '0001-01-01' THEN NULL 
+        ELSE h.harvest_date::date 
+    END AS harvest_date,
     p.name,
     p.unit,
     p.main_category_id AS mainCategory,
@@ -116,8 +117,7 @@ ORDER BY h.date DESC;
     }
     error_log("Second query executed successfully");
 
-    $history = [];
-    while ($row = $historyResult->fetch_assoc()) {
+    $history = [];    while ($row = $historyResult->fetch(PDO::FETCH_ASSOC)) {
         $history[] = [
             "id" => (int)$row['id'],
             "predefined_item_id" => (int)$row['predefined_item_id'],
@@ -126,7 +126,7 @@ ORDER BY h.date DESC;
             "subcategory" => $row['subcategory'],
             "quantity" => (int)$row['quantity'],
             "unit" => $row['unit'],
-            "harvestDate" => $row['harvest_date'] ? date('Y-m-d', strtotime($row['harvest_date'])) : null,
+            "harvestDate" => $row['harvest_date'],
             "notes" => $row['notes'] ?? "",
             "changeType" => $row['change_type'],
             "date" => $row['date']

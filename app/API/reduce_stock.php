@@ -48,12 +48,11 @@ if (!$itemId || !$quantity) {
 }
 
 // Fetch predefined_item_id from the items table
-$predefinedItemIdQuery = "SELECT predefined_item_id FROM items WHERE id = ?";
+$predefinedItemIdQuery = "SELECT predefined_item_id FROM items WHERE id = $1";
 $stmt = $conn->prepare($predefinedItemIdQuery);
-$stmt->bind_param("i", $itemId);
-$stmt->execute();
-$result = $stmt->get_result();
-if ($row = $result->fetch_assoc()) {
+$stmt->execute([$itemId]);
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+if ($row) {
     $predefinedItemId = $row['predefined_item_id'];
 } else {
     echo json_encode(["success" => false, "message" => "Item not found"]);
@@ -61,24 +60,21 @@ if ($row = $result->fetch_assoc()) {
 }
 
 // Update the items table (do NOT update harvest_date)
-$updateItemQuery = "UPDATE items SET quantity = quantity + ? WHERE id = ?";
+$updateItemQuery = "UPDATE items SET quantity = quantity + $1 WHERE id = $2";
 $stmt = $conn->prepare($updateItemQuery);
-$stmt->bind_param("ii", $quantity, $itemId);
+$stmt->execute([$quantity, $itemId]);
 $stmt->execute();
 
 // Insert into item_history table with NULL harvest_date
-$insertHistoryQuery = "INSERT INTO item_history (predefined_item_id, quantity, harvest_date, notes, change_type, date) VALUES (?, ?, ?, ?, 'reduce', ?)";
+$insertHistoryQuery = "INSERT INTO item_history (predefined_item_id, quantity, harvest_date, notes, change_type, date) VALUES ($1, $2, $3, $4, 'reduce', $5)";
 $stmt = $conn->prepare($insertHistoryQuery);
-$nullHarvestDate = null;
-$stmt->bind_param("iisss", $predefinedItemId, $quantity, $nullHarvestDate, $notes, $created_at);
-$stmt->execute();
+$stmt->execute([$predefinedItemId, $quantity, null, $notes, $created_at]);
 
 // Insert into action_logs table
-$insertLogQuery = "INSERT INTO action_logs (user_id, action_type, description, timestamp) VALUES (?, 'reduce_stock', ?, NOW())";
+$insertLogQuery = "INSERT INTO action_logs (user_id, action_type, description, timestamp) VALUES ($1, 'reduce_stock', $2, CURRENT_TIMESTAMP)";
 $logDescription = "Reduced stock for item ID: $itemId by $quantity units.";
 $stmt = $conn->prepare($insertLogQuery);
-$stmt->bind_param("is", $userId, $logDescription);
-$stmt->execute();
+$stmt->execute([$userId, $logDescription]);
 
 echo json_encode(["success" => true, "message" => "Stock reduced and logged successfully"]);
 ?>
