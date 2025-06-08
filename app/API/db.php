@@ -16,13 +16,23 @@ if (file_exists($envFile)) {
     }
 }
 
-// Set SSL certificate path and mode
-$sslCertPath = realpath(__DIR__ . '/../../certificates/root.crt');
-if (!$sslCertPath) {
-    error_log("SSL certificate not found at: " . __DIR__ . '/../../certificates/root.crt');
+// Configure SSL settings
+$sslCertPath = __DIR__ . '/../../certificates/root.crt';
+
+// Validate SSL certificate
+if (!file_exists($sslCertPath)) {
+    error_log("SSL certificate not found at: " . $sslCertPath);
     die("SSL certificate not found");
 }
-error_log("Using SSL certificate: " . $sslCertPath);
+
+if (!is_readable($sslCertPath)) {
+    error_log("SSL certificate is not readable at: " . $sslCertPath);
+    die("SSL certificate is not readable");
+}
+
+// Set PostgreSQL SSL environment variables
+putenv('PGSSLMODE=verify-full');
+putenv('PGSSLROOTCERT=' . $sslCertPath);
 
 // Direct database parameters
 $host = 'aws-0-ap-southeast-1.pooler.supabase.com';
@@ -32,7 +42,7 @@ $user = 'postgres.yigklskjcbgfnxklhwir';
 $pass = '1rN7Wq8WOwGnZtIL';
 
 // Build DSN with session pooler settings
-$dsn = "pgsql:host={$host};port={$port};dbname={$dbname};sslmode=require;options='--application-name=soil_inventory --client-min-messages=warning'";
+$dsn = "pgsql:host={$host};port={$port};dbname={$dbname}";
 
 try {
     error_log("Attempting connection to: {$host}:{$port}");
