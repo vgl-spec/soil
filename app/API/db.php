@@ -6,21 +6,32 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 function configureSslCertificate() {
-    // Get absolute path to certificate
-    $certDir = str_replace('\\', '/', __DIR__ . '/../../certificates');
-    $sslCertPath = $certDir . '/root.crt';
+    $sslCertPath = str_replace('\\', '/', realpath(__DIR__ . '/../../certificates/root.crt'));
     
     error_log("Checking SSL configuration...");
     error_log("Certificate path: " . $sslCertPath);
 
-    if (!file_exists($sslCertPath)) {
-        error_log("SSL certificate not found at: " . $sslCertPath);
+    if (!$sslCertPath || !file_exists($sslCertPath)) {
+        error_log("SSL certificate not found at: " . __DIR__ . '/../../certificates/root.crt');
+        return false;
+    }
+
+    if (!is_readable($sslCertPath)) {
+        error_log("SSL certificate is not readable at: " . $sslCertPath);
+        return false;
+    }
+
+    $certContent = file_get_contents($sslCertPath);
+    if (!$certContent || strpos($certContent, '-----BEGIN CERTIFICATE-----') === false) {
+        error_log("Invalid certificate content at: " . $sslCertPath);
         return false;
     }
 
     // Set SSL environment variables
-    putenv('PGSSLMODE=prefer');
+    putenv('PGSSLMODE=verify-ca');
     putenv('PGSSLROOTCERT=' . $sslCertPath);
+    $_ENV['PGSSLMODE'] = 'verify-ca';
+    $_ENV['PGSSLROOTCERT'] = $sslCertPath;
     
     error_log("SSL configuration successful");
     return $sslCertPath;
@@ -52,11 +63,11 @@ $dbname = 'postgres';
 $user = 'postgres.yigklskjcbgfnxklhwir';
 $pass = '1rN7Wq8WOwGnZtIL';
 
-// Build DSN string
-$dsn = "pgsql:host={$host};port={$port};dbname={$dbname}";
+// Build DSN string with SSL configuration
+$dsn = "pgsql:host={$host};port={$port};dbname={$dbname};sslmode=require";
 
 try {
-    error_log("Attempting connection to: {$host}:{$port}");
+    error_log("Attempting connection to: {$host}:{$port} with SSL");
     $conn = new PDO($dsn, $user, $pass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
