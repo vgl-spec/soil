@@ -3,6 +3,39 @@
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../../php_errors.log');
 
+function configureSslCertificate() {
+    $certDir = str_replace('\\', '/', __DIR__ . '/../../certificates');
+    $sslCertPath = $certDir . '/root.crt';
+    
+    error_log("Checking SSL configuration:");
+    error_log("Certificate directory: " . $certDir);
+    error_log("Certificate path: " . $sslCertPath);
+
+    if (!is_dir($certDir)) {
+        error_log("Certificate directory not found: " . $certDir);
+        return false;
+    }
+
+    if (!file_exists($sslCertPath)) {
+        error_log("SSL certificate not found at: " . $sslCertPath);
+        return false;
+    }
+
+    if (!is_readable($sslCertPath)) {
+        error_log("SSL certificate is not readable at: " . $sslCertPath);
+        return false;
+    }
+
+    // Set both environment variables and PHP global variables
+    $_ENV['PGSSLMODE'] = 'prefer';
+    $_ENV['PGSSLROOTCERT'] = $sslCertPath;
+    putenv('PGSSLMODE=prefer');
+    putenv('PGSSLROOTCERT=' . $sslCertPath);
+    
+    error_log("SSL configuration successful");
+    return $sslCertPath;
+}
+
 // Load environment variables from .env file
 $envFile = __DIR__ . '/../../.env';
 if (file_exists($envFile)) {
@@ -16,23 +49,11 @@ if (file_exists($envFile)) {
     }
 }
 
-// Configure SSL settings
-$sslCertPath = __DIR__ . '/../../certificates/root.crt';
-
-// Validate SSL certificate
-if (!file_exists($sslCertPath)) {
-    error_log("SSL certificate not found at: " . $sslCertPath);
-    die("SSL certificate not found");
+// Configure SSL
+$sslCertPath = configureSslCertificate();
+if ($sslCertPath === false) {
+    die("SSL certificate configuration failed");
 }
-
-if (!is_readable($sslCertPath)) {
-    error_log("SSL certificate is not readable at: " . $sslCertPath);
-    die("SSL certificate is not readable");
-}
-
-// Set PostgreSQL SSL environment variables
-putenv('PGSSLMODE=verify-full');
-putenv('PGSSLROOTCERT=' . $sslCertPath);
 
 // Direct database parameters
 $host = 'aws-0-ap-southeast-1.pooler.supabase.com';
