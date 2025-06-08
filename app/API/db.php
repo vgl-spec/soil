@@ -22,13 +22,13 @@ error_log("Database URL: " . preg_replace('/postgresql:\/\/[^:]+:[^@]+@/', 'post
 // Parse the URI
 $dbopts = parse_url($databaseUrl);
 $host   = $dbopts['host'];
-$port   = $dbopts['port'];
+$port   = 5432; // Use session pooler port
 $user   = $dbopts['user'];
 $pass   = $dbopts['pass'];
 $dbname = ltrim($dbopts['path'], '/');
 
 // Build DSN and connect with pooler settings
-$dsn = "pgsql:host={$host};port={$port};dbname={$dbname};sslmode=require";
+$dsn = "pgsql:host={$host};port={$port};dbname={$dbname};sslmode=require;options='--client-min-messages=warning';application_name='soil_inventory';pgbouncer=session";
 
 try {
     error_log("Attempting connection to: {$host}:{$port}");
