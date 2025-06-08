@@ -1,17 +1,44 @@
 ﻿<?php
 require_once 'db.php';
 
-echo "\nEnvironment Check:\n";
-echo "Current Directory: " . __DIR__ . "\n";
-echo "Certificate Path: " . $sslCertPath . "\n";
-echo "PGSSLMODE: " . getenv('PGSSLMODE') . "\n";
-echo "PGSSLROOTCERT: " . getenv('PGSSLROOTCERT') . "\n\n";
+try {
+    if (!$conn) {
+        throw new Exception("Database connection not initialized");
+    }
 
-echo "File System Check:\n";
-echo "Certificate exists: " . (file_exists($sslCertPath) ? 'Yes' : 'No') . "\n";
-echo "Certificate readable: " . (is_readable($sslCertPath) ? 'Yes' : 'No') . "\n";
-if (file_exists($sslCertPath)) {
-    echo "Certificate permissions: " . substr(sprintf('%o', fileperms($sslCertPath)), -4) . "\n";
-    echo "Certificate content sample: \n";
-    echo substr(file_get_contents($sslCertPath), 0, 100) . "...\n";
+    // Test the connection with correct PostgreSQL SSL queries
+    $versionStmt = $conn->query('SELECT version()');
+    $version = $versionStmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Use the correct PostgreSQL SSL status query
+    $sslStmt = $conn->query("SHOW ssl");
+    $ssl = $sslStmt->fetch(PDO::FETCH_ASSOC);
+
+    echo json_encode([
+        'success' => true,
+        'ssl_info' => [
+            'certificate_path' => realpath(__DIR__ . '/../../certificates/root.crt'),
+            'certificate_exists' => file_exists(__DIR__ . '/../../certificates/root.crt'),
+            'certificate_readable' => is_readable(__DIR__ . '/../../certificates/root.crt'),
+            'certificate_permissions' => substr(sprintf('%o', fileperms(__DIR__ . '/../../certificates/root.crt')), -4),
+            'postgres_version' => $version['version'],
+            'ssl_enabled' => $ssl['ssl'] === 'on' ? 'Yes' : 'No',
+            'connection_status' => $conn->getAttribute(PDO::ATTR_CONNECTION_STATUS),
+            'ssl_mode' => getenv('PGSSLMODE'),
+            'ssl_cert_path' => getenv('PGSSLROOTCERT')
+        ]
+    ], JSON_PRETTY_PRINT);
+} catch (Exception $e) {
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage(),
+        'ssl_info' => [
+            'certificate_path' => realpath(__DIR__ . '/../../certificates/root.crt'),
+            'certificate_exists' => file_exists(__DIR__ . '/../../certificates/root.crt'),
+            'certificate_readable' => is_readable(__DIR__ . '/../../certificates/root.crt'),
+            'certificate_permissions' => substr(sprintf('%o', fileperms(__DIR__ . '/../../certificates/root.crt')), -4),
+            'ssl_mode' => getenv('PGSSLMODE'),
+            'ssl_cert_path' => getenv('PGSSLROOTCERT')
+        ]
+    ], JSON_PRETTY_PRINT);
 }
