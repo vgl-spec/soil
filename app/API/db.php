@@ -25,12 +25,10 @@ function configureSslCertificate() {
     if (!$certContent || strpos($certContent, '-----BEGIN CERTIFICATE-----') === false) {
         error_log("Invalid certificate content at: " . $sslCertPath);
         return false;
-    }
-
-    // Set SSL environment variables
-    putenv('PGSSLMODE=verify-ca');
+    }    // Set SSL environment variables with strict verification
+    putenv('PGSSLMODE=verify-full');
     putenv('PGSSLROOTCERT=' . $sslCertPath);
-    $_ENV['PGSSLMODE'] = 'verify-ca';
+    $_ENV['PGSSLMODE'] = 'verify-full';
     $_ENV['PGSSLROOTCERT'] = $sslCertPath;
     
     error_log("SSL configuration successful");
@@ -63,11 +61,11 @@ $dbname = 'postgres';
 $user = 'postgres.yigklskjcbgfnxklhwir';
 $pass = '1rN7Wq8WOwGnZtIL';
 
-// Build DSN string with SSL configuration
-$dsn = "pgsql:host={$host};port={$port};dbname={$dbname};sslmode=require";
+// Build DSN string with enforced SSL
+$dsn = "pgsql:host={$host};port={$port};dbname={$dbname};sslmode=verify-full;sslrootcert={$sslCertPath}";
 
 try {
-    error_log("Attempting connection to: {$host}:{$port} with SSL");
+    error_log("Attempting secure connection to: {$host}:{$port} with enforced SSL");
     $conn = new PDO($dsn, $user, $pass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
