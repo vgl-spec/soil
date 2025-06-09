@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_BASE_URL } from "./config/api";
 
-const API_URL = "https://soil-3tik.onrender.com/API/login.php";
+const API_URL = `${API_BASE_URL}/login.php`;
 
 export const login = async (username: string, password: string) => {
   console.log("Payload being sent:", { username, password }); // Debug log

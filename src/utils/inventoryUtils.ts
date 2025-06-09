@@ -1,5 +1,6 @@
 import { HistoryEntry, ConsolidatedItem, Category, Unit } from "../types";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 // TODO: These functions will be updated to make API calls instead of direct database access
 
@@ -83,7 +84,7 @@ export const checkItemExists = async (
       console.log("Sending parameters: ", { name, mainCategoryId, subcategoryId });
 
       // Make the API request with numeric IDs for main_category_id and subcategory_id
-      const response = await axios.get('https://soil-3tik.onrender.com/API/check_item_exists.php', {
+      const response = await axios.get(`${API_BASE_URL}/check_item_exists.php`, {
         params: {
           name,
           main_category_id: mainCategoryId,
@@ -198,7 +199,7 @@ export const createPredefinedItem = async (
       };
     }
 
-    const response = await axios.post('https://soil-3tik.onrender.com/API/add_predefined_item.php', {
+    const response = await axios.post(`${API_BASE_URL}/add_predefined_item.php`, {
       main_category_id: mainCategoryId,
       subcat_id: subcategoryId,
       name: itemName,

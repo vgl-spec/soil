@@ -1,10 +1,15 @@
 <?php
 // Allow from specific origins
-$allowedOrigins = ['https://soil-indol.vercel.app'];
+$allowedOrigins = ['https://soil-indol.vercel.app', 'http://localhost:5173', 'http://localhost:3000', 'http://localhost'];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
 if (in_array($origin, $allowedOrigins)) {
     header("Access-Control-Allow-Origin: $origin");
+} else {
+    // For development, allow any localhost origin
+    if (preg_match('/^http:\/\/localhost(:\d+)?$/', $origin)) {
+        header("Access-Control-Allow-Origin: $origin");
+    }
 }
 
 header("Access-Control-Allow-Methods: POST, OPTIONS");
@@ -24,6 +29,12 @@ ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../../php_errors.log');
 
 include 'db.php';
+
+// Debug connection status
+error_log("Connection status in login.php: " . ($conn ? "SUCCESS" : "FAILED"));
+if (!$conn) {
+    error_log("Database connection failed in login.php - connection is null");
+}
 
 if (!$conn) {
     echo json_encode(["success" => false, "message" => "Database connection failed"]);

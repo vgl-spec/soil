@@ -10,6 +10,7 @@ import ManageCategoriesModal from "../components/ManageCategoriesModal";
 import ReportView from "../components/ReportView";
 import { ConsolidatedItem, HistoryEntry, Category, ViewMode } from "../types";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 const OperatorDashboard: React.FC = () => {
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
@@ -31,7 +32,7 @@ const OperatorDashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("https://soil-3tik.onrender.com/API/categories.php");
+        const res = await axios.get(`${API_BASE_URL}/categories.php`);
         const json = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
         setCategories(json);
       } catch (error) {
@@ -44,7 +45,7 @@ const OperatorDashboard: React.FC = () => {
   // Fetch items and history from backend
   const fetchItems = async () => {
     try {
-      const res = await axios.get("https://soil-3tik.onrender.com/API/items.php");
+      const res = await axios.get(`${API_BASE_URL}/items.php`);
       const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;      if (data.items && Array.isArray(data.items)) {
         const itemsWithDates = data.items.map((item: ConsolidatedItem) => {
           const itemHistory = data.history.filter((h: HistoryEntry) => 

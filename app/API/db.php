@@ -32,13 +32,15 @@ function getDBConnection() {
         $pdo = new PDO($dsn, $user, $password, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]);
-
-        error_log("Database connection successful");
+        ]);        error_log("Database connection successful");
         return $pdo;
-
     } catch (PDOException $e) {
         error_log("Database connection error (PDO): " . $e->getMessage());
+        error_log("PDO Error Code: " . $e->getCode());
+        error_log("PDO Error Info: " . print_r($e->errorInfo, true));
+        return null;
+    } catch (Exception $e) {
+        error_log("General connection error: " . $e->getMessage());
         return null;
     }
 }
@@ -47,7 +49,9 @@ function getDBConnection() {
 try {
     $conn = getDBConnection();
     if (!$conn) {
-        error_log("Failed to initialize database connection");
+        error_log("Failed to initialize database connection - getDBConnection returned null");
+    } else {
+        error_log("Database connection initialized successfully in db.php");
     }
 } catch (Exception $e) {
     error_log("Connection initialization error: " . $e->getMessage());
