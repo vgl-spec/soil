@@ -7,6 +7,12 @@ error_reporting(E_ALL);
 
 function getDBConnection() {
     try {
+        // Check if PostgreSQL PDO driver is available
+        if (!in_array('pgsql', PDO::getAvailableDrivers())) {
+            error_log("PostgreSQL PDO driver not available. Available drivers: " . implode(', ', PDO::getAvailableDrivers()));
+            throw new Exception("PostgreSQL PDO driver not installed on this server");
+        }
+        
         // Database connection parameters - use environment variables in production
         $host = getenv('DB_HOST') ?: 'aws-0-ap-southeast-1.pooler.supabase.com';
         $port = getenv('DB_PORT') ?: '5432';
