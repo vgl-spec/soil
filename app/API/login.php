@@ -7,9 +7,10 @@ if (in_array($origin, $allowedOrigins)) {
     header("Access-Control-Allow-Origin: $origin");
 }
 
-header(header: "Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Credentials: true");
+header("Content-Type: application/json");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -19,6 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../../php_errors.log');
 
 include 'db.php';
 
@@ -53,24 +56,48 @@ if (!$username || !$password) {
     exit;
 }
 
-$sql = "SELECT * FROM users WHERE username = $1";
-$stmt = $conn->prepare($sql);
-$stmt->execute([$username]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+try {
+    $sql = "SELECT * FROM users WHERE username = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$username]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);    if ($user) {
+        $passwordValid = false;
+        
+        // Check if password is hashed (bcrypt format)
+        if (password_get_info($user['password'])['algo']) {
+            // Password is hashed, use password_verify
+            $passwordValid = password_verify($password, $user['password']);
+        } else {
+            // Password is plain text, compare directly (temporary fallback)
+            $passwordValid = ($password === $user['password']);
+            
+            // If plain text password matches, hash it for future use
+            if ($passwordValid) {
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $updateStmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+                $updateStmt->execute([$hashedPassword, $user['id']]);
+                error_log("Auto-hashed password for user: " . $user['username']);
+            }
+        }
+        
+        if ($passwordValid) {
+            $_SESSION['user'] = $user;
 
-if ($user) {
-    // ✅ Secure password comparison using password_verify
-    if (password_verify($password, $user['password'])) {
-        $_SESSION['user'] = $user;
+            $log = $conn->prepare("INSERT INTO action_logs (user_id, action_type, description) VALUES (?, ?, ?)");
+            $log->execute([$user['id'], 'login', 'User logged in']);
 
-        $log = $conn->prepare("INSERT INTO action_logs (user_id, action_type, description) VALUES ($1, 'login', 'User logged in')");
-        $log->execute([$user['id']]);
-
-        echo json_encode(["success" => true, "role" => $user['role'], "id" => $user['id']]);
+            echo json_encode(["success" => true, "role" => $user['role'], "id" => $user['id']]);
+        } else {
+            echo json_encode(["success" => false, "message" => "Invalid password"]);
+        }
     } else {
-        echo json_encode(["success" => false, "message" => "Invalid password"]);
+        echo json_encode(["success" => false, "message" => "User not found"]);
     }
-} else {
-    echo json_encode(["success" => false, "message" => "User not found"]);
+} catch (PDOException $e) {
+    error_log("Database error in login.php: " . $e->getMessage());
+    echo json_encode(["success" => false, "message" => "Database error occurred"]);
+} catch (Exception $e) {
+    error_log("General error in login.php: " . $e->getMessage());
+    echo json_encode(["success" => false, "message" => "An error occurred"]);
 }
 ?>

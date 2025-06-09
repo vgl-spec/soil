@@ -1,15 +1,4 @@
 <?php
-header("Access-Control-Allow-Origin: https://soil-indol.vercel.app");
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-
-// Handle preflight OPTIONS request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
 // Enable error logging
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../../php_errors.log');
@@ -58,12 +47,9 @@ function getDBConnection() {
 try {
     $conn = getDBConnection();
     if (!$conn) {
-        throw new Exception("Failed to initialize database connection");
+        error_log("Failed to initialize database connection");
     }
 } catch (Exception $e) {
     error_log("Connection initialization error: " . $e->getMessage());
-    // Don't expose detailed error messages to the client
-    http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Database connection failed"]);
-    exit();
+    $conn = null;
 }
