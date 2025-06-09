@@ -1,0 +1,16 @@
+{
+    "name": "soil/inventory-system",
+    "description": "Soil Inventory Management System",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "ext-pdo": "*",
+        "ext-pdo_pgsql": "*",
+        "ext-json": "*"
+    },
+    "config": {
+        "platform": {
+            "php": "8.2"
+        }
+    }
+}

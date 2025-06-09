@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: soil-inventory
+    env: php
+    buildCommand: "composer install --no-dev --optimize-autoloader"
+    startCommand: "vendor/bin/heroku-php-apache2 ."
+    plan: free
+    buildFilter:
+      paths:
+      - app/**
+      - src/**
+      - composer.json
+      - Dockerfile
+    envVars:
+      - key: PHP_EXTENSIONS
+        value: "pdo,pdo_pgsql"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: soil-db
+          property: connectionString
+    
+databases:
+  - name: soil-db
+    databaseName: soil_inventory
+    user: soil_user
