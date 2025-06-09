@@ -4,9 +4,8 @@
 const API_CONFIG = {
   // For local development (XAMPP)
   LOCAL: "http://localhost/soil/app/API",
-  
-  // For production (Render.com)
-  PRODUCTION: "https://soil-3tik.onrender.com/API"
+    // For production (Render.com)
+  PRODUCTION: "https://soil-3tik.onrender.com/app/API"
 };
 
 // Set which environment to use
