@@ -10,4 +10,4 @@ const API_CONFIG = {
 };
 
 // Set which environment to use
-export const API_BASE_URL = API_CONFIG.PRODUCTION; // Change to API_CONFIG.PRODUCTION for production
+export const API_BASE_URL = API_CONFIG.PRODUCTION; // Change to API_CONFIG.LOCAL for local development

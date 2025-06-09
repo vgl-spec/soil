@@ -7,33 +7,45 @@ error_reporting(E_ALL);
 
 function getDBConnection() {
     try {
-        $certPath = realpath(__DIR__ . '/../../certificates/root.crt');
-        if (!$certPath || !file_exists($certPath)) {
-            throw new Exception("SSL certificate not found at: " . $certPath);
-        }
+        // Database connection parameters - use environment variables in production
+        $host = getenv('DB_HOST') ?: 'aws-0-ap-southeast-1.pooler.supabase.com';
+        $port = getenv('DB_PORT') ?: '5432';
+        $dbname = getenv('DB_NAME') ?: 'postgres';
+        $user = getenv('DB_USER') ?: 'postgres.yigklskjcbgfnxklhwir';
+        $password = getenv('DB_PASSWORD') ?: '1rN7Wq8WOwGnZtIL';
         
-        // Database connection parameters
-        $host = 'aws-0-ap-southeast-1.pooler.supabase.com';
-        $port = '5432';
-        $dbname = 'postgres';
-        $user = 'postgres.yigklskjcbgfnxklhwir';
-        $password = '1rN7Wq8WOwGnZtIL';
+        // Check if we're in a local environment (has certificate file)
+        $certPath = realpath(__DIR__ . '/../../certificates/root.crt');
+        $isLocal = $certPath && file_exists($certPath);
+        
+        if ($isLocal) {
+            error_log("Local environment with SSL certificate");
+            // Local environment - use SSL certificate
+            putenv("PGSSLMODE=verify-ca");
+            putenv("PGSSLROOTCERT=$certPath");
+        } else {
+            error_log("Production environment - using require SSL mode");
+            // Production environment - use require SSL without certificate verification
+            putenv("PGSSLMODE=require");
+        }
 
-        // Set SSL mode environment variables
-        putenv("PGSSLMODE=verify-ca");  // Changed to verify-ca which is less strict than verify-full
-        putenv("PGSSLROOTCERT=$certPath");
-
-        // Construct DSN with SSL parameters
+        // Construct DSN
         $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
         
         error_log("Attempting connection with DSN: " . $dsn);
         
-        // Create PDO connection
-        $pdo = new PDO($dsn, $user, $password, [
+        // Create PDO connection with appropriate options
+        $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]);        error_log("Database connection successful");
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_TIMEOUT => 30
+        ];
+
+        $pdo = new PDO($dsn, $user, $password, $options);
+        
+        error_log("Database connection successful");
         return $pdo;
+        
     } catch (PDOException $e) {
         error_log("Database connection error (PDO): " . $e->getMessage());
         error_log("PDO Error Code: " . $e->getCode());
@@ -46,6 +58,7 @@ function getDBConnection() {
 }
 
 // Initialize connection
+$conn = null;  // Initialize as global variable
 try {
     $conn = getDBConnection();
     if (!$conn) {
@@ -57,3 +70,4 @@ try {
     error_log("Connection initialization error: " . $e->getMessage());
     $conn = null;
 }
+?>
