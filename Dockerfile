@@ -7,14 +7,21 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Enable Apache mod_rewrite and other useful modules
+# Enable Apache mod_rewrite and headers
 RUN a2enmod rewrite headers
 
 # Copy your app files
 COPY . /var/www/html/
 
 # Set proper permissions
-RUN chown -R www-data:www-data /var/www/html/
+RUN chown -R www-data:www-data /var/www/html/ \
+    && chmod -R 755 /var/www/html/
+
+# Configure Apache to allow .htaccess
+RUN echo '<Directory /var/www/html/>\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>' >> /etc/apache2/apache2.conf
 
 WORKDIR /var/www/html
 

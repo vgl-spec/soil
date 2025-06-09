@@ -1,40 +1,64 @@
 <?php
-// SECURITY WARNING: DELETE THIS FILE AFTER VERIFICATION
-// This file contains sensitive server information
+// PostgreSQL PDO Extension Verification Script
+// **DELETE THIS FILE AFTER VERIFICATION FOR SECURITY**
 
-echo "<h1>PHP Configuration Check</h1>";
-echo "<h2>PostgreSQL PDO Status</h2>";
-
-// Check if PDO is enabled
-if (class_exists('PDO')) {
-    echo "<p style='color: green;'>✅ PDO support: ENABLED</p>";
-    
-    // Check available drivers
-    $drivers = PDO::getAvailableDrivers();
-    echo "<p>Available PDO drivers: " . implode(', ', $drivers) . "</p>";
-    
-    // Check specifically for PostgreSQL
-    if (in_array('pgsql', $drivers)) {
-        echo "<p style='color: green;'>✅ PostgreSQL PDO driver: ENABLED</p>";
-    } else {
-        echo "<p style='color: red;'>❌ PostgreSQL PDO driver: NOT FOUND</p>";
-    }
-} else {
-    echo "<p style='color: red;'>❌ PDO support: NOT ENABLED</p>";
-}
-
-// Check loaded extensions
-echo "<h2>Loaded Extensions</h2>";
-$extensions = ['pdo', 'pdo_pgsql'];
-foreach ($extensions as $ext) {
-    $loaded = extension_loaded($ext);
-    $status = $loaded ? 'ENABLED' : 'NOT LOADED';
-    $color = $loaded ? 'green' : 'red';
-    $icon = $loaded ? '✅' : '❌';
-    echo "<p style='color: $color;'>$icon $ext: $status</p>";
-}
-
-echo "<hr>";
-echo "<h2>Full PHP Configuration</h2>";
-phpinfo();
+header('Content-Type: text/html; charset=utf-8');
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PostgreSQL PDO Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .warning { color: orange; font-weight: bold; }
+        .section { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>🔍 PostgreSQL PDO Extension Verification</h1>
+    
+    <div class="section">
+        <h2>📋 Quick Check Results</h2>
+        <?php
+        $pdo_loaded = extension_loaded('pdo');
+        $pgsql_loaded = extension_loaded('pdo_pgsql');
+        $drivers = class_exists('PDO') ? PDO::getAvailableDrivers() : [];
+        $pgsql_driver = in_array('pgsql', $drivers);
+        
+        echo "<p>PDO Extension: " . ($pdo_loaded ? "<span class='success'>✅ LOADED</span>" : "<span class='error'>❌ NOT LOADED</span>") . "</p>";
+        echo "<p>PDO PostgreSQL Extension: " . ($pgsql_loaded ? "<span class='success'>✅ LOADED</span>" : "<span class='error'>❌ NOT LOADED</span>") . "</p>";
+        echo "<p>PostgreSQL Driver Available: " . ($pgsql_driver ? "<span class='success'>✅ YES</span>" : "<span class='error'>❌ NO</span>") . "</p>";
+        echo "<p>Available PDO Drivers: " . implode(', ', $drivers) . "</p>";
+        
+        if ($pdo_loaded && $pgsql_loaded && $pgsql_driver) {
+            echo "<div class='success'><h3>🎉 SUCCESS: PostgreSQL PDO is fully configured!</h3></div>";
+        } else {
+            echo "<div class='error'><h3>❌ ISSUE: PostgreSQL PDO is not properly configured</h3></div>";
+        }
+        ?>
+    </div>
+    
+    <div class="section">
+        <h2>🔧 Environment Information</h2>
+        <p><strong>PHP Version:</strong> <?php echo phpversion(); ?></p>
+        <p><strong>Server:</strong> <?php echo $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown'; ?></p>
+        <p><strong>Date:</strong> <?php echo date('Y-m-d H:i:s T'); ?></p>
+    </div>
+    
+    <div class="section">
+        <h2>📖 Full PHP Info</h2>
+        <details>
+            <summary>Click to view complete phpinfo() output</summary>
+            <?php phpinfo(); ?>
+        </details>
+    </div>
+    
+    <div class="warning">
+        <h3>⚠️ SECURITY WARNING</h3>
+        <p><strong>Delete this file immediately after verification!</strong></p>
+        <p>This file exposes sensitive server information.</p>
+    </div>
+</body>
+</html>
