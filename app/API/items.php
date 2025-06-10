@@ -1,12 +1,16 @@
 <?php
-// Enable error reporting for debugging - keep off in production
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Log errors to file
+// Suppress HTML error output in production and log to file
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/php_errors.log');
+error_reporting(E_ALL);
+
+// Allowed CORS origins
+// $allowed_origins = [
+//     "http://localhost:3000",
+//     "https://your-production-url.com"
+// ];
 
 // Allow all origins for CORS
 header("Access-Control-Allow-Origin: *");
@@ -23,17 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 error_log("Starting items.php script");
+// Include database connection via absolute path
+require_once __DIR__ . '/db.php';
+error_log("Included db.php");
 
-try {
-    include_once 'db.php';
-    error_log("Included db.php");
-
-    if ($conn->connect_error) {
-        error_log("DB Connection Error: " . $conn->connect_error);
-        throw new Exception("Connection failed: " . $conn->connect_error);
-    }
-    error_log("DB connected successfully");    // Query current inventory
-    $query = "
+// Query current inventory
+$query = "
 SELECT
     i.id,
     i.predefined_item_id,
@@ -51,30 +50,30 @@ SELECT
 FROM items i
 INNER JOIN predefined_items p ON i.predefined_item_id = p.id
 ORDER BY i.created_at DESC;
-    ";
+";
 
-    error_log("Executing query: " . $query);
-    $result = $conn->query($query);
-    if (!$result) {
-        error_log("Query failed");
-        throw new Exception("Items query failed");
-    }
-    error_log("First query executed successfully");
+error_log("Executing query: " . $query);
+$result = $conn->query($query);
+if (!$result) {
+    error_log("Query failed");
+    throw new Exception("Items query failed");
+}
+error_log("First query executed successfully");
 
-    $items = [];    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-        $items[] = [
-            "id" => (int)$row['id'],
-            "predefined_item_id" => (int)$row['predefined_item_id'],
-            "name" => $row['name'],
-            "mainCategory" => $row['mainCategory'],
-            "subcategory" => $row['subcategory'],
-            "quantity" => (int)$row['quantity'],
-            "unit" => $row['unit'],
-            "harvestDate" => $row['harvest_date']
-        ];
-    }
-    error_log("Fetched " . count($items) . " items");    // Query full history
-    $historyQuery = "
+$items = [];    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+    $items[] = [
+        "id" => (int)$row['id'],
+        "predefined_item_id" => (int)$row['predefined_item_id'],
+        "name" => $row['name'],
+        "mainCategory" => $row['mainCategory'],
+        "subcategory" => $row['subcategory'],
+        "quantity" => (int)$row['quantity'],
+        "unit" => $row['unit'],
+        "harvestDate" => $row['harvest_date']
+    ];
+}
+error_log("Fetched " . count($items) . " items");    // Query full history
+$historyQuery = "
 SELECT
     h.id,
     h.predefined_item_id,
@@ -93,37 +92,37 @@ SELECT
 FROM item_history h
 INNER JOIN predefined_items p ON h.predefined_item_id = p.id
 ORDER BY h.date DESC;
-    ";
+";
 
-    error_log("Executing history query: " . $historyQuery);
-    $historyResult = $conn->query($historyQuery);
-    if (!$historyResult) {
-        error_log("History query error: " . $conn->error);
-        throw new Exception("History query failed: " . $conn->error);
-    }
-    error_log("Second query executed successfully");
+error_log("Executing history query: " . $historyQuery);
+$historyResult = $conn->query($historyQuery);
+if (!$historyResult) {
+    error_log("History query error: " . $conn->error);
+    throw new Exception("History query failed: " . $conn->error);
+}
+error_log("Second query executed successfully");
 
-    $history = [];    while ($row = $historyResult->fetch(PDO::FETCH_ASSOC)) {
-        $history[] = [
-            "id" => (int)$row['id'],
-            "predefined_item_id" => (int)$row['predefined_item_id'],
-            "name" => $row['name'],
-            "mainCategory" => $row['mainCategory'],
-            "subcategory" => $row['subcategory'],
-            "quantity" => (int)$row['quantity'],
-            "unit" => $row['unit'],
-            "harvestDate" => $row['harvest_date'],
-            "notes" => $row['notes'] ?? "",
-            "changeType" => $row['change_type'],
-            "date" => $row['date']
-        ];
-    }
-    error_log("Fetched " . count($history) . " history records");
+$history = [];    while ($row = $historyResult->fetch(PDO::FETCH_ASSOC)) {
+    $history[] = [
+        "id" => (int)$row['id'],
+        "predefined_item_id" => (int)$row['predefined_item_id'],
+        "name" => $row['name'],
+        "mainCategory" => $row['mainCategory'],
+        "subcategory" => $row['subcategory'],
+        "quantity" => (int)$row['quantity'],
+        "unit" => $row['unit'],
+        "harvestDate" => $row['harvest_date'],
+        "notes" => $row['notes'] ?? "",
+        "changeType" => $row['change_type'],
+        "date" => $row['date']
+    ];
+}
+error_log("Fetched " . count($history) . " history records");
 
-    echo json_encode([
-        "items" => $items,
-        "history" => $history
-    ]);
+echo json_encode([
+    "items" => $items,
+    "history" => $history
+]);
 
 } catch (Exception $e) {
     http_response_code(500);

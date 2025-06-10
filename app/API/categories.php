@@ -1,10 +1,17 @@
 <?php
+// Suppress HTML error output in production
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../../php_errors.log');
+error_reporting(E_ALL);
+
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
-require_once "db.php";
+// Include database connection via absolute path
+require_once __DIR__ . '/db.php';
 
 try {    // Fetch Main Categories
     $mainQuery = "SELECT * FROM categories";
@@ -32,7 +39,7 @@ try {    // Fetch Main Categories
 
     $subcategories = [];    while ($sub = $subStmt->fetch(PDO::FETCH_ASSOC)) {
         $mainId = $sub['category_id'];
-        $mainNameQuery = "SELECT name FROM categories WHERE id = $1";
+        $mainNameQuery = "SELECT name FROM categories WHERE id = ?";
         $mainNameStmt = $conn->prepare($mainNameQuery);
         $mainNameStmt->execute([$mainId]);
         $mainNameRow = $mainNameStmt->fetch(PDO::FETCH_ASSOC);
@@ -58,7 +65,7 @@ try {    // Fetch Main Categories
 
         if (isset($subcategories[$subId])) {
             $subName = $subcategories[$subId];
-            $mainNameQuery = "SELECT name FROM categories WHERE id = $1";
+            $mainNameQuery = "SELECT name FROM categories WHERE id = ?";
             $mainNameStmt = $conn->prepare($mainNameQuery);
             $mainNameStmt->execute([$mainId]);
             $mainNameRow = $mainNameStmt->fetch(PDO::FETCH_ASSOC);
