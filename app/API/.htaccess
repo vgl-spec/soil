@@ -1,19 +1,10 @@
 # API Directory Configuration
 # CORS is handled by PHP cors.php - no duplicate headers needed
 
-# Handle preflight OPTIONS requests
-RewriteEngine On
-RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ $1 [R=200,L]
-
-# Security headers only
-Header always set X-Content-Type-Options nosniff
-Header always set X-Frame-Options DENY
-
 # Ensure PHP files are processed correctly
 AddType application/x-httpd-php .php
 
-# Security headers
+# Security headers only
 Header always set X-Content-Type-Options nosniff
 Header always set X-Frame-Options DENY
 Header always set X-XSS-Protection "1; mode=block"
