@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .result { margin: 20px 0; padding: 15px; border: 1px solid #ccc; background: #f9f9f9; }
+        .error { border-color: #d00; background: #fee; }
+        .success { border-color: #0a0; background: #efe; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>CORS Test for Soil API</h1>
+    
+    <button onclick="testCORS()">Test CORS (GET)</button>
+    <button onclick="testLogin()">Test Login (POST)</button>
+    <button onclick="testPreflight()">Test Preflight (OPTIONS)</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'https://soil-3tik.onrender.com/API';
+        const resultsDiv = document.getElementById('results');
+
+        function addResult(title, content, isError = false) {
+            const div = document.createElement('div');
+            div.className = `result ${isError ? 'error' : 'success'}`;
+            div.innerHTML = `<h3>${title}</h3><pre>${content}</pre>`;
+            resultsDiv.appendChild(div);
+        }
+
+        async function testCORS() {
+            try {
+                const response = await fetch(`${API_BASE}/test.php`, {
+                    method: 'GET',
+                    headers: {
+                        'Origin': 'https://soil-indol.vercel.app'
+                    }
+                });
+                
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+                
+                const data = await response.json();
+                addResult('CORS Test (GET)', JSON.stringify({
+                    status: response.status,
+                    headers: headers,
+                    data: data
+                }, null, 2));
+            } catch (error) {
+                addResult('CORS Test (GET)', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/login.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'https://soil-indol.vercel.app'
+                    },
+                    body: JSON.stringify({
+                        username: 'test',
+                        password: 'test'
+                    })
+                });
+                
+                const data = await response.json();
+                addResult('Login Test (POST)', JSON.stringify({
+                    status: response.status,
+                    data: data
+                }, null, 2));
+            } catch (error) {
+                addResult('Login Test (POST)', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testPreflight() {
+            try {
+                const response = await fetch(`${API_BASE}/login.php`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': 'https://soil-indol.vercel.app',
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+                
+                addResult('Preflight Test (OPTIONS)', JSON.stringify({
+                    status: response.status,
+                    headers: headers
+                }, null, 2));
+            } catch (error) {
+                addResult('Preflight Test (OPTIONS)', `Error: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>
