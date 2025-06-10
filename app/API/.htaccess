@@ -1,0 +1,23 @@
+# CORS Headers for API endpoints
+Header always set Access-Control-Allow-Origin "https://soil-indol.vercel.app"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+Header always set Access-Control-Allow-Credentials "true"
+Header always set Access-Control-Max-Age "86400"
+
+# Handle preflight OPTIONS requests
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# Ensure PHP files are processed correctly
+AddType application/x-httpd-php .php
+
+# Security headers
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options DENY
+Header always set X-XSS-Protection "1; mode=block"
+
+# Error handling
+ErrorDocument 404 /app/API/error.php
+ErrorDocument 500 /app/API/error.php

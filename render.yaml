@@ -11,9 +11,12 @@ services:
       - src/**
       - composer.json
       - Dockerfile
+      - .htaccess
+      - .user.ini
+      - apache.conf
     envVars:
       - key: PHP_EXTENSIONS
-        value: "pdo,pdo_pgsql"
+        value: "pdo,pdo_pgsql,json,mbstring"
       - key: DATABASE_URL
         fromDatabase:
           name: soil-db

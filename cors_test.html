@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS and API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .result { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>CORS and API Connectivity Test</h1>
+    
+    <div class="test-section">
+        <h2>1. CORS Test</h2>
+        <button onclick="testCORS()">Test CORS Configuration</button>
+        <div id="corsResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Login API Test</h2>
+        <button onclick="testLogin()">Test Login Endpoint</button>
+        <div id="loginResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Headers Inspection</h2>
+        <button onclick="inspectHeaders()">Inspect Response Headers</button>
+        <div id="headersResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://soil-3tik.onrender.com/API';
+
+        async function testCORS() {
+            const resultDiv = document.getElementById('corsResult');
+            resultDiv.innerHTML = '<p>Testing CORS configuration...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/cors_test.php`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                const success = response.ok && data.success;
+                
+                resultDiv.innerHTML = `
+                    <p class="${success ? 'success' : 'error'}">
+                        CORS Test: ${success ? '✅ PASSED' : '❌ FAILED'}
+                    </p>
+                    <p>Status: ${response.status} ${response.statusText}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ CORS Test FAILED</p>
+                    <p>Error: ${error.message}</p>
+                    <p class="warning">This indicates a CORS policy violation or network error.</p>
+                `;
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '<p>Testing login endpoint...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/login.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: 'test',
+                        password: 'test'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <p class="${response.ok ? 'success' : 'warning'}">
+                        Login Test: ${response.ok ? '✅ ENDPOINT ACCESSIBLE' : '⚠️ ENDPOINT ERROR'}
+                    </p>
+                    <p>Status: ${response.status} ${response.statusText}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Login Test FAILED</p>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function inspectHeaders() {
+            const resultDiv = document.getElementById('headersResult');
+            resultDiv.innerHTML = '<p>Inspecting response headers...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/cors_test.php`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    }
+                });
+                
+                const headers = {};
+                for (let [key, value] of response.headers.entries()) {
+                    headers[key] = value;
+                }
+                
+                const corsHeaders = [
+                    'access-control-allow-origin',
+                    'access-control-allow-methods',
+                    'access-control-allow-headers',
+                    'access-control-allow-credentials'
+                ];
+                
+                let corsStatus = '✅ CORS Headers Present';
+                const missingHeaders = corsHeaders.filter(header => !headers[header]);
+                if (missingHeaders.length > 0) {
+                    corsStatus = `❌ Missing CORS Headers: ${missingHeaders.join(', ')}`;
+                }
+                
+                resultDiv.innerHTML = `
+                    <p class="${missingHeaders.length === 0 ? 'success' : 'error'}">${corsStatus}</p>
+                    <p>Preflight Status: ${response.status} ${response.statusText}</p>
+                    <h4>All Response Headers:</h4>
+                    <pre>${JSON.stringify(headers, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Headers Inspection FAILED</p>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Auto-run tests on page load
+        window.onload = function() {
+            console.log('Running automatic CORS tests...');
+            testCORS();
+        };
+    </script>
+</body>
+</html>

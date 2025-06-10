@@ -1,4 +1,7 @@
 <?php
+// Include centralized CORS and error settings
+require_once __DIR__ . '/cors.php';
+
 // PostgreSQL PDO Extension Verification Script
 // **DELETE THIS FILE AFTER VERIFICATION FOR SECURITY**
 
