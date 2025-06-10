@@ -1,32 +1,24 @@
 <?php
-// Allow from specific origins
-$allowedOrigins = ['https://soil-indol.vercel.app', 'http://localhost:5173', 'http://localhost:3000', 'http://localhost'];
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+// Suppress HTML errors and enable logging
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../../php_errors.log');
+error_reporting(E_ALL);
 
-if (in_array($origin, $allowedOrigins)) {
-    header("Access-Control-Allow-Origin: $origin");
-} else {
-    // For development, allow any localhost origin
-    if (preg_match('/^http:\/\/localhost(:\d+)?$/', $origin)) {
-        header("Access-Control-Allow-Origin: $origin");
-    }
-}
-
+// CORS - allow any origin
+header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Credentials: true");
 header("Content-Type: application/json");
 
+// Handle preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/../../php_errors.log');
 
 // Include the database connection file using absolute path to avoid include_path issues
 $dbFile = __DIR__ . '/db.php';
