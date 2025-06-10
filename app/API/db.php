@@ -20,19 +20,13 @@ function getDBConnection() {
         $user = getenv('DB_USER') ?: 'postgres.yigklskjcbgfnxklhwir';
         $password = getenv('DB_PASSWORD') ?: '1rN7Wq8WOwGnZtIL';
         
-        // Check if we're in a local environment (has certificate file)
+        // Determine SSL mode (default to require to avoid CA verification issues)
+        $sslMode = getenv('DB_SSL_MODE') ?: 'require';
+        putenv("PGSSLMODE={$sslMode}");
+        // Optionally use a custom root cert if provided
         $certPath = realpath(__DIR__ . '/../../certificates/root.crt');
-        $isLocal = $certPath && file_exists($certPath);
-        
-        if ($isLocal) {
-            error_log("Local environment with SSL certificate");
-            // Local environment - use SSL certificate
-            putenv("PGSSLMODE=verify-ca");
-            putenv("PGSSLROOTCERT=$certPath");
-        } else {
-            error_log("Production environment - using require SSL mode");
-            // Production environment - use require SSL without certificate verification
-            putenv("PGSSLMODE=require");
+        if ($sslMode === 'verify-ca' && $certPath && file_exists($certPath)) {
+            putenv("PGSSLROOTCERT={$certPath}");
         }
 
         // Construct DSN

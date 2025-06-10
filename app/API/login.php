@@ -28,7 +28,13 @@ ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../../php_errors.log');
 
-include 'db.php';
+// Include the database connection file using absolute path to avoid include_path issues
+$dbFile = __DIR__ . '/db.php';
+error_log("Including DB file: $dbFile");
+if (!file_exists($dbFile)) {
+    error_log("DB file not found at: $dbFile");
+}
+require_once $dbFile;
 
 // Debug connection status
 error_log("Connection status in login.php: " . ($conn ? "SUCCESS" : "FAILED"));
