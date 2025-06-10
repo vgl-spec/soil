@@ -1,23 +1,6 @@
 # Enable rewrite to map /API/* to /app/API/*
 RewriteEngine On
 
-# Add CORS headers for all API requests
-<IfModule mod_headers.c>
-    SetEnvIf Origin "^https://soil-indol\.vercel\.app$" ORIGIN_ALLOWED
-    SetEnvIf Origin "^http://localhost:(3000|5173)$" ORIGIN_ALLOWED
-    SetEnvIf Origin "^http://127\.0\.0\.1:(3000|5173)$" ORIGIN_ALLOWED
-    
-    Header always set Access-Control-Allow-Origin "%{HTTP_ORIGIN}e" env=ORIGIN_ALLOWED
-    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" env=ORIGIN_ALLOWED
-    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With" env=ORIGIN_ALLOWED
-    Header always set Access-Control-Allow-Credentials "true" env=ORIGIN_ALLOWED
-    Header always set Access-Control-Max-Age "86400" env=ORIGIN_ALLOWED
-</IfModule>
-
-# Handle preflight OPTIONS requests by passing them to PHP
-RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteCond %{REQUEST_URI} ^/API/
-RewriteRule ^API/(.*)$ /app/API/$1 [L,QSA]
-
 # Redirect API calls to the actual PHP scripts in app/API
+# CORS is handled by PHP cors.php - no Apache headers needed
 RewriteRule ^API/(.*)$ /app/API/$1 [L,QSA]
