@@ -1,7 +1,8 @@
 <?php
-require_once "db.php"; // Connect to the database
+// Include centralized CORS and error settings
+require_once __DIR__ . '/cors.php';
 
-header("Content-Type: application/json");
+require_once "db.php"; // Connect to the database
 
 try {
     // Fetch recent action logs (you can add filtering here later)

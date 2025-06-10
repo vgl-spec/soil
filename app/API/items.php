@@ -1,30 +1,6 @@
 <?php
-// Suppress HTML error output in production and log to file
-ini_set('display_errors', 0);
-ini_set('display_startup_errors', 0);
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/php_errors.log');
-error_reporting(E_ALL);
-
-// Allowed CORS origins
-// $allowed_origins = [
-//     "http://localhost:3000",
-//     "https://your-production-url.com"
-// ];
-
-// Allow all origins for CORS
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Credentials: true");
-
-header("Access-Control-Allow-Methods: GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header('Content-Type: application/json');
-
-// Handle OPTIONS preflight
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
+// Include centralized CORS and error settings
+require_once __DIR__ . '/cors.php';
 
 error_log("Starting items.php script");
 // Include database connection via absolute path

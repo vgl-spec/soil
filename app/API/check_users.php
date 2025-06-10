@@ -1,4 +1,7 @@
 <?php
+// Include centralized CORS and error settings
+require_once __DIR__ . '/cors.php';
+
 require_once 'db.php';
 
 try {

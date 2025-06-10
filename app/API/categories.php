@@ -1,14 +1,6 @@
 <?php
-// Suppress HTML error output in production
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/../../php_errors.log');
-error_reporting(E_ALL);
-
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
+// Include centralized CORS and error settings
+require_once __DIR__ . '/cors.php';
 
 // Include database connection via absolute path
 require_once __DIR__ . '/db.php';
