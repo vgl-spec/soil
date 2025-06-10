@@ -4,6 +4,7 @@ import Footer from "../components/Footer";
 import axios from "axios";
 import ReportView from "../components/ReportView";
 import { HistoryEntry, Category } from "../types";
+import { API_BASE_URL } from "../config/api";
 
 interface LogEntry {
   id: number;
@@ -21,12 +22,12 @@ const SupervisorDashboard: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get("https://soil-3tik.onrender.com/API/logs.php")
+      .get(`${API_BASE_URL}/logs.php`)
       .then((res) => setLogs(res.data))
       .catch((err) => console.error(err));
 
     axios
-      .get("https://soil-3tik.onrender.com/API/categories.php")
+      .get(`${API_BASE_URL}/categories.php`)
       .then((res) => {
         const json = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
         setCategories(json);
@@ -34,7 +35,7 @@ const SupervisorDashboard: React.FC = () => {
       .catch((err) => console.error("Failed to load categories:", err));
 
     axios
-      .get("https://soil-3tik.onrender.com/API/items.php")
+      .get(`${API_BASE_URL}/items.php`)
       .then((res) => {
         const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
         setHistoryEntries(Array.isArray(data.history) ? data.history : []);

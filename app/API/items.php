@@ -8,23 +8,9 @@ error_reporting(E_ALL);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/php_errors.log');
 
-// Allowed CORS origins
-$allowed_origins = [
-    'https://soil-indol.vercel.app',
-    'https://soil-3tik.onrender.com',
-    // add your other allowed frontend domains here
-];
-
-if (isset($_SERVER['HTTP_ORIGIN'])) {
-    if (in_array($_SERVER['HTTP_ORIGIN'], $allowed_origins)) {
-        header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
-        header("Access-Control-Allow-Credentials: true");
-    } else {
-        header('HTTP/1.1 403 Forbidden');
-        error_log("CORS error: Origin not allowed - " . $_SERVER['HTTP_ORIGIN']);
-        exit('Origin not allowed');
-    }
-}
+// Allow all origins for CORS
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Credentials: true");
 
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");

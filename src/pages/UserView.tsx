@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { ConsolidatedItem, Category } from "../types";
@@ -12,7 +13,7 @@ const UserView: React.FC = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("https://soil-3tik.onrender.com/API/categories.php");
+        const res = await axios.get(`${API_BASE_URL}/categories.php`);
         const json = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
         setCategories(json);
       } catch (error) {
@@ -25,7 +26,7 @@ const UserView: React.FC = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await axios.get("https://soil-3tik.onrender.com/API/items.php");
+        const res = await axios.get(`${API_BASE_URL}/items.php`);
         const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
 
         if (data.items && Array.isArray(data.items)) {
