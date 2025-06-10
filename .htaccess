@@ -1,0 +1,5 @@
+# Enable rewrite to map /API/* to /app/API/*
+RewriteEngine On
+
+# Redirect API calls to the actual PHP scripts in app/API
+RewriteRule ^API/(.*)$ /app/API/$1 [L,QSA]
