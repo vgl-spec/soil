@@ -3,7 +3,7 @@ services:
     name: soil-inventory
     env: php
     buildCommand: "composer install --no-dev --optimize-autoloader"
-    startCommand: "vendor/bin/heroku-php-apache2 ."
+    startCommand: "vendor/bin/heroku-php-apache2 -C apache.conf ."
     plan: free
     buildFilter:
       paths:
