@@ -34,6 +34,7 @@ const OperatorDashboard: React.FC = () => {
       try {
         const res = await axios.get(`${API_BASE_URL}/categories.php`);
         const json = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+        console.log("Loaded categories:", json);
         setCategories(json);
       } catch (error) {
         console.error("❌ Failed to load categories:", error);
@@ -46,7 +47,11 @@ const OperatorDashboard: React.FC = () => {
   const fetchItems = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/items.php`);
-      const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;      if (data.items && Array.isArray(data.items)) {
+      const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+      
+      console.log("Loaded items data:", data);
+
+      if (data.items && Array.isArray(data.items)) {
         const itemsWithDates = data.items.map((item: ConsolidatedItem) => {
           const itemHistory = data.history.filter((h: HistoryEntry) => 
             h.predefined_item_id === item.predefined_item_id

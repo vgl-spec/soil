@@ -58,6 +58,12 @@ export const getSubcategoryNameById = (categories: Category, categoryName: strin
 export const getCategoryLabel = (categories: Category, mainCategoryId: string | number, subcategoryId: string | number): string => {
   console.log('getCategoryLabel called with:', { mainCategoryId, subcategoryId, categories });
   
+  // Handle case where categories isn't loaded yet
+  if (!categories || Object.keys(categories).length === 0) {
+    console.log('Categories not loaded yet');
+    return `Loading...`;
+  }
+  
   // Try to find category by ID
   const categoryName = getCategoryNameById(categories, Number(mainCategoryId));
   console.log('Found categoryName:', categoryName);
@@ -72,7 +78,10 @@ export const getCategoryLabel = (categories: Category, mainCategoryId: string | 
     
     return `${mainLabel}/${subLabel}`;
   }
-  return `${mainCategoryId}/${subcategoryId}`;
+  
+  // If category not found, might be due to data structure issues
+  console.log('Category not found - available categories:', Object.keys(categories));
+  return `Unknown (${mainCategoryId}/${subcategoryId})`;
 };
 
 // Updated checkItemExists function to dynamically get category IDs
