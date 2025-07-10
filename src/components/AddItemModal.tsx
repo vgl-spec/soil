@@ -83,6 +83,14 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
 
       const existing = await checkItemExists(name, mainCategory, subcategory, categories);
 
+      console.log('Categories structure:', categories);
+      console.log('Selected mainCategory:', mainCategory);
+      console.log('Selected subcategory:', subcategory);
+      console.log('Categories[mainCategory]:', categories[mainCategory]);
+      console.log('Subcategories:', categories[mainCategory]?.subcategories);
+      console.log('Selected subcategory data:', categories[mainCategory]?.subcategories?.[subcategory]);
+      console.log('Check item exists result:', existing);
+
       if (!existing || !existing.id) {
         // Item doesn't exist in predefined_items, so create it first
         try {

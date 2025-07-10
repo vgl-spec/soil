@@ -21,7 +21,16 @@ try {
         $category = (int)$_GET['main_category_id'];
         $subcategory = (int)$_GET['subcategory_id'];
 
-        error_log("Checking item exists: name=$itemName, main_category_id=$category, subcat_id=$subcategory");
+        error_log("Checking item exists: name='$itemName', main_category_id=$category, subcat_id=$subcategory");
+        error_log("Available predefined items in database:");
+        
+        // Debug: List all predefined items to see what's in the database
+        $debugQuery = "SELECT id, name, main_category_id, subcat_id, unit FROM predefined_items";
+        $debugStmt = $conn->prepare($debugQuery);
+        $debugStmt->execute();
+        while ($debugRow = $debugStmt->fetch(PDO::FETCH_ASSOC)) {
+            error_log("DB Item: ID=" . $debugRow['id'] . ", name='" . $debugRow['name'] . "', main_cat=" . $debugRow['main_category_id'] . ", subcat=" . $debugRow['subcat_id'] . ", unit=" . $debugRow['unit']);
+        }
 
         // Prepare the query to prevent SQL injection (PDO version)
         $query = "SELECT * FROM predefined_items WHERE main_category_id = ? AND subcat_id = ? AND name = ?";
