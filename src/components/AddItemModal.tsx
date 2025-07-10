@@ -71,7 +71,9 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
       alert("Please enter a valid quantity.");
       setIsSubmitting(false);
       return;
-    }    try {
+    }
+
+    try {
       // Check if the item exists in predefined_items (categories is now required)
       if (!categories || Object.keys(categories).length === 0) {
         alert('Categories not loaded. Please try again.');
@@ -82,63 +84,137 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
       const existing = await checkItemExists(name, mainCategory, subcategory, categories);
 
       if (!existing || !existing.id) {
-        alert('This item does not exist in predefined items. Please add it as a predefined item first.');
-        setIsSubmitting(false);
-        return;
-      }
-      if (existing.unit !== unit) {
-        alert(`The item "${name}" already exists with unit "${existing.unit}".`);
-        setIsSubmitting(false);
-        return;
-      }
+        // Item doesn't exist in predefined_items, so create it first
+        try {
+          const main_category_id = categories[mainCategory].id;
+          const subcat_id = categories[mainCategory].subcategories[subcategory].id;
+          
+          console.log('Creating predefined item:', { main_category_id, subcat_id, name, unit });
+          
+          const createResponse = await axios.post('https://soil-3tik.onrender.com/API/add_predefined_item.php', {
+            main_category_id: Number(main_category_id),
+            subcat_id: Number(subcat_id),
+            name,
+            unit
+          }, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            withCredentials: true,
+          });
 
-      // Prepare the payload for the backend
-      const payload = {
-        predefined_item_id: Number(existing.id),
-        quantity: Number(quantity),
-        harvest_date: harvestDate,
-        notes: notes || ''
-      };
+          if (!createResponse.data.success) {
+            alert(`Failed to create predefined item: ${createResponse.data.message}`);
+            setIsSubmitting(false);
+            return;
+          }
+          
+          // Now use the newly created predefined item ID
+          const predefinedItemId = createResponse.data.id;
+          
+          // Prepare the payload for the backend
+          const payload = {
+            predefined_item_id: Number(predefinedItemId),
+            quantity: Number(quantity),
+            harvest_date: harvestDate,
+            notes: notes || ''
+          };
 
-      console.log('Sending payload:', payload);
+          console.log('Sending payload with new predefined item:', payload);
 
-      // Send the payload to the backend
-      const response = await axios.post('https://soil-3tik.onrender.com/API/add_item.php', payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true, // Include credentials if needed
-      });
+          // Send the payload to the backend
+          const response = await axios.post('https://soil-3tik.onrender.com/API/add_item.php', payload, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            withCredentials: true,
+          });
 
-      // Handle the backend response
-      if (response.data.success) {
-        alert("Item added or updated successfully!");
+          // Handle the backend response
+          if (response.data.success) {
+            alert("Item created and added successfully!");
 
-        // Add the new history entry to the history view
-        onAddItem({
-          id: response.data.id, // Use the ID returned from the backend
-          name,
-          mainCategory,
-          subcategory,
+            // Add the new history entry to the history view
+            onAddItem({
+              id: response.data.id,
+              name,
+              mainCategory,
+              subcategory,
+              quantity: Number(quantity),
+              unit,
+              harvestDate: harvestDate,
+              notes,
+              predefined_item_id: predefinedItemId,
+              changeType: "add",
+              date: new Date().toISOString()
+            });
+
+            // Close the modal
+            onClose();
+          } else {
+            alert(response.data.message || "Failed to add item.");
+          }
+          
+        } catch (createError) {
+          console.error("Error creating predefined item:", createError);
+          alert("Failed to create predefined item. Please try again.");
+        }
+      } else {
+        // Item exists in predefined_items, proceed normally
+        if (existing.unit !== unit) {
+          alert(`The item "${name}" already exists with unit "${existing.unit}".`);
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Prepare the payload for the backend
+        const payload = {
+          predefined_item_id: Number(existing.id),
           quantity: Number(quantity),
-          unit,
-          harvestDate: harvestDate,
-          notes,
-          predefined_item_id: existing.id,
-          changeType: "add",
-          date: new Date().toISOString() // Use the current timestamp
+          harvest_date: harvestDate,
+          notes: notes || ''
+        };
+
+        console.log('Sending payload:', payload);
+
+        // Send the payload to the backend
+        const response = await axios.post('https://soil-3tik.onrender.com/API/add_item.php', payload, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true,
         });
 
-        // Close the modal
-        onClose();
-      } else {
-        alert(response.data.message || "Failed to add item.");
+        // Handle the backend response
+        if (response.data.success) {
+          alert("Item added successfully!");
+
+          // Add the new history entry to the history view
+          onAddItem({
+            id: response.data.id,
+            name,
+            mainCategory,
+            subcategory,
+            quantity: Number(quantity),
+            unit,
+            harvestDate: harvestDate,
+            notes,
+            predefined_item_id: existing.id,
+            changeType: "add",
+            date: new Date().toISOString()
+          });
+
+          // Close the modal
+          onClose();
+        } else {
+          alert(response.data.message || "Failed to add item.");
+        }
       }
     } catch (error) {
       console.error("Error adding item:", error);
       alert("An error occurred while adding the item. Please try again.");
     } finally {
-      setIsSubmitting(false); // Re-enable the submit button
+      setIsSubmitting(false);
     }
   };
 
