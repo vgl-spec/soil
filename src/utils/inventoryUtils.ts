@@ -56,12 +56,20 @@ export const getSubcategoryNameById = (categories: Category, categoryName: strin
 
 // Helper function to get category label for display
 export const getCategoryLabel = (categories: Category, mainCategoryId: string | number, subcategoryId: string | number): string => {
+  console.log('getCategoryLabel called with:', { mainCategoryId, subcategoryId, categories });
+  
   // Try to find category by ID
   const categoryName = getCategoryNameById(categories, Number(mainCategoryId));
+  console.log('Found categoryName:', categoryName);
+  
   if (categoryName) {
     const subcategoryName = getSubcategoryNameById(categories, categoryName, Number(subcategoryId));
+    console.log('Found subcategoryName:', subcategoryName);
+    
     const mainLabel = categories[categoryName]?.label || categoryName;
     const subLabel = subcategoryName ? categories[categoryName]?.subcategories?.[subcategoryName]?.label || subcategoryName : subcategoryId;
+    console.log('Labels:', { mainLabel, subLabel });
+    
     return `${mainLabel}/${subLabel}`;
   }
   return `${mainCategoryId}/${subcategoryId}`;

@@ -46,6 +46,20 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
 }) => {
   const itemsArray = Array.isArray(items) ? items : [];
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Categories structure:', categories);
+    if (itemsArray.length > 0) {
+      const firstItem = itemsArray[0];
+      console.log('First item:', firstItem);
+      if (viewMode === 'consolidated') {
+        const item = firstItem as ConsolidatedItem;
+        console.log('Item mainCategory:', item.mainCategory, 'subcategory:', item.subcategory);
+        console.log('Category lookup result:', getCategoryLabel(categories, item.mainCategory, item.subcategory));
+      }
+    }
+  }, [categories, itemsArray, viewMode]);
+
   // useEffect(() => {
   //   console.log('All items:', itemsArray);
   //   if (viewMode === 'consolidated') {
