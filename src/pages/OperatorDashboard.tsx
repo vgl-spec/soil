@@ -13,6 +13,9 @@ import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 
 const OperatorDashboard: React.FC = () => {
+  console.log("OperatorDashboard component loaded");
+  console.log("API_BASE_URL:", API_BASE_URL);
+  
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
   const [categories, setCategories] = useState<Category>({});
   const [viewMode, setViewMode] = useState<ViewMode>("consolidated");
@@ -33,7 +36,9 @@ const OperatorDashboard: React.FC = () => {
     const fetchData = async () => {
       try {
         console.log("Fetching categories from:", `${API_BASE_URL}/categories.php`);
-        const res = await axios.get(`${API_BASE_URL}/categories.php`);
+        const res = await axios.get(`${API_BASE_URL}/categories.php`, {
+          timeout: 10000 // 10 second timeout
+        });
         console.log("Categories response status:", res.status);
         console.log("Categories response data:", res.data);
         const json = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
@@ -45,7 +50,15 @@ const OperatorDashboard: React.FC = () => {
           console.error("Status:", error.response?.status);
           console.error("URL:", error.config?.url);
           console.error("Data:", error.response?.data);
+          
+          if (error.code === 'ECONNABORTED') {
+            console.error("Request timed out - server might be sleeping");
+          } else if (error.response?.status === 404) {
+            console.error("Endpoint not found - check if server is deployed correctly");
+          }
         }
+        // Set empty categories as fallback
+        setCategories({});
       }
     };
     fetchData();
@@ -55,7 +68,9 @@ const OperatorDashboard: React.FC = () => {
   const fetchItems = async () => {
     try {
       console.log("Fetching items from:", `${API_BASE_URL}/items.php`);
-      const res = await axios.get(`${API_BASE_URL}/items.php`);
+      const res = await axios.get(`${API_BASE_URL}/items.php`, {
+        timeout: 10000 // 10 second timeout
+      });
       console.log("Items response status:", res.status);
       const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
       
@@ -108,6 +123,12 @@ const OperatorDashboard: React.FC = () => {
         console.error("Items - Status:", error.response?.status);
         console.error("Items - URL:", error.config?.url);
         console.error("Items - Data:", error.response?.data);
+        
+        if (error.code === 'ECONNABORTED') {
+          console.error("Items request timed out - server might be sleeping");
+        } else if (error.response?.status === 404) {
+          console.error("Items endpoint not found - check if server is deployed correctly");
+        }
       }
       setHistoryEntries([]);
       setConsolidatedItems([]);
