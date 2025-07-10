@@ -8,7 +8,15 @@ import UserView from "./pages/UserView";
 
 const ProtectedRoute = ({ children, role }: { children: JSX.Element; role: string }) => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  if (!user || user.role !== role) return <Navigate to="/" />;
+  console.log("ProtectedRoute - Current user:", user);
+  console.log("ProtectedRoute - Required role:", role);
+  
+  if (!user || user.role !== role) {
+    console.log("ProtectedRoute - Redirecting to login");
+    return <Navigate to="/" />;
+  }
+  
+  console.log("ProtectedRoute - Access granted");
   return children;
 };
 

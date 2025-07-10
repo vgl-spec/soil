@@ -32,8 +32,8 @@ SELECT
     i.updated_at,
     p.name,
     p.unit,
-    p.main_category_id as mainCategory,
-    p.subcat_id as subcategory
+    COALESCE(p.main_category_id, 0) as mainCategory,
+    COALESCE(p.subcat_id, 0) as subcategory
 FROM items i
 INNER JOIN predefined_items p ON i.predefined_item_id = p.id
 ORDER BY i.created_at DESC;
@@ -78,8 +78,8 @@ SELECT
     END AS harvest_date,
     p.name,
     p.unit,
-    p.main_category_id AS mainCategory,
-    p.subcat_id AS subcategory
+    COALESCE(p.main_category_id, 0) AS mainCategory,
+    COALESCE(p.subcat_id, 0) AS subcategory
 FROM item_history h
 INNER JOIN predefined_items p ON h.predefined_item_id = p.id
 ORDER BY h.date DESC;
