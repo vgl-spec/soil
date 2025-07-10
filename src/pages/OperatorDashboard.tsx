@@ -32,12 +32,20 @@ const OperatorDashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("Fetching categories from:", `${API_BASE_URL}/categories.php`);
         const res = await axios.get(`${API_BASE_URL}/categories.php`);
+        console.log("Categories response status:", res.status);
+        console.log("Categories response data:", res.data);
         const json = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
         console.log("Loaded categories:", json);
         setCategories(json);
       } catch (error) {
         console.error("❌ Failed to load categories:", error);
+        if (axios.isAxiosError(error)) {
+          console.error("Status:", error.response?.status);
+          console.error("URL:", error.config?.url);
+          console.error("Data:", error.response?.data);
+        }
       }
     };
     fetchData();
@@ -46,7 +54,9 @@ const OperatorDashboard: React.FC = () => {
   // Fetch items and history from backend
   const fetchItems = async () => {
     try {
+      console.log("Fetching items from:", `${API_BASE_URL}/items.php`);
       const res = await axios.get(`${API_BASE_URL}/items.php`);
+      console.log("Items response status:", res.status);
       const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
       
       console.log("Loaded items data:", data);
@@ -94,6 +104,11 @@ const OperatorDashboard: React.FC = () => {
       }
     } catch (error) {
       console.error("❌ Failed to load items:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Items - Status:", error.response?.status);
+        console.error("Items - URL:", error.config?.url);
+        console.error("Items - Data:", error.response?.data);
+      }
       setHistoryEntries([]);
       setConsolidatedItems([]);
     }
