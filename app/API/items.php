@@ -2,10 +2,21 @@
 // Include centralized CORS and error settings
 require_once __DIR__ . '/cors.php';
 
+header('Content-Type: application/json');
+
 error_log("Starting items.php script");
 // Include database connection via absolute path
 require_once __DIR__ . '/db.php';
 error_log("Included db.php");
+
+try {
+    // Check if database connection exists
+    if (!$conn) {
+        error_log("Database connection is null");
+        throw new Exception("Database connection failed");
+    }
+
+    error_log("Database connection verified");
 
 // Query current inventory
 $query = "
@@ -31,12 +42,14 @@ ORDER BY i.created_at DESC;
 error_log("Executing query: " . $query);
 $result = $conn->query($query);
 if (!$result) {
-    error_log("Query failed");
-    throw new Exception("Items query failed");
+    $errorInfo = $conn->errorInfo();
+    error_log("Query failed: " . $errorInfo[2]);
+    throw new Exception("Items query failed: " . $errorInfo[2]);
 }
 error_log("First query executed successfully");
 
-$items = [];    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+$items = [];
+while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     $items[] = [
         "id" => (int)$row['id'],
         "predefined_item_id" => (int)$row['predefined_item_id'],
@@ -48,7 +61,9 @@ $items = [];    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
         "harvestDate" => $row['harvest_date']
     ];
 }
-error_log("Fetched " . count($items) . " items");    // Query full history
+error_log("Fetched " . count($items) . " items");
+
+// Query full history
 $historyQuery = "
 SELECT
     h.id,
@@ -73,12 +88,14 @@ ORDER BY h.date DESC;
 error_log("Executing history query: " . $historyQuery);
 $historyResult = $conn->query($historyQuery);
 if (!$historyResult) {
-    error_log("History query error: " . $conn->error);
-    throw new Exception("History query failed: " . $conn->error);
+    $errorInfo = $conn->errorInfo();
+    error_log("History query error: " . $errorInfo[2]);
+    throw new Exception("History query failed: " . $errorInfo[2]);
 }
 error_log("Second query executed successfully");
 
-$history = [];    while ($row = $historyResult->fetch(PDO::FETCH_ASSOC)) {
+$history = [];
+while ($row = $historyResult->fetch(PDO::FETCH_ASSOC)) {
     $history[] = [
         "id" => (int)$row['id'],
         "predefined_item_id" => (int)$row['predefined_item_id'],
@@ -101,6 +118,7 @@ echo json_encode([
 ]);
 
 } catch (Exception $e) {
+    error_log("API Error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         "error" => true,
@@ -110,8 +128,10 @@ echo json_encode([
 }
 
 if (isset($conn)) {
-    $conn->close();
+    $conn = null;
     error_log("DB connection closed");
 }
 
 error_log("Finished items.php script");
+exit;
+?>
