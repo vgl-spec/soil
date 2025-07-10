@@ -26,7 +26,7 @@ SELECT
     i.quantity,
     CASE 
         WHEN i.harvest_date IS NULL OR i.harvest_date = '0001-01-01' THEN NULL 
-        ELSE i.harvest_date::date 
+        ELSE DATE(i.harvest_date)
     END AS harvest_date,
     i.created_at,
     i.updated_at,
@@ -74,7 +74,7 @@ SELECT
     h.date,
     CASE 
         WHEN h.harvest_date IS NULL OR h.harvest_date = '0001-01-01' THEN NULL 
-        ELSE h.harvest_date::date 
+        ELSE DATE(h.harvest_date)
     END AS harvest_date,
     p.name,
     p.unit,
@@ -112,12 +112,22 @@ while ($row = $historyResult->fetch(PDO::FETCH_ASSOC)) {
 }
 error_log("Fetched " . count($history) . " history records");
 
+// Clean any output buffer before sending JSON
+if (ob_get_level()) {
+    ob_clean();
+}
+
 echo json_encode([
     "items" => $items,
     "history" => $history
 ]);
 
 } catch (Exception $e) {
+    // Clean any output buffer before sending error response
+    if (ob_get_level()) {
+        ob_clean();
+    }
+    
     error_log("API Error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
