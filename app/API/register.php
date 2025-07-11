@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = password_hash($inputData['password'], PASSWORD_DEFAULT); // Encrypt the password
     $contact = $inputData['contact'];
     $subdivision = $inputData['subdivision'];    // Check if the username or email already exists
-    $checkUserQuery = "SELECT * FROM users WHERE username = $1 OR email = $2";
+    $checkUserQuery = "SELECT * FROM users WHERE username = ? OR email = ?";
     $stmt = $conn->prepare($checkUserQuery);
     $stmt->execute([$username, $email]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Insert new user into the database
-    $insertQuery = "INSERT INTO users (username, email, password, contact, subdivision, role) VALUES ($1, $2, $3, $4, $5, 'user')";
+    $insertQuery = "INSERT INTO users (username, email, password, contact, subdivision, role) VALUES (?, ?, ?, ?, ?, 'user')";
     $stmt = $conn->prepare($insertQuery);    if ($stmt->execute([$username, $email, $password, $contact, $subdivision])) {
         echo json_encode(['success' => true, 'message' => 'Registration successful.']);
     } else {

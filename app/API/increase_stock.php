@@ -40,7 +40,7 @@ try {
     if (!$itemId || !$quantity) {
         throw new Exception("Item ID and quantity are required");
     }    // Fetch predefined_item_id from the items table
-    $predefinedItemIdQuery = "SELECT predefined_item_id FROM items WHERE id = $1";
+    $predefinedItemIdQuery = "SELECT predefined_item_id FROM items WHERE id = ?";
     $stmt = $conn->prepare($predefinedItemIdQuery);
     $stmt->execute([$itemId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -52,24 +52,23 @@ try {
     }
 
     // Update the items table
-    $updateItemQuery = "UPDATE items SET quantity = quantity + $1, harvest_date = $2 WHERE id = $3";
+    $updateItemQuery = "UPDATE items SET quantity = quantity + ?, harvest_date = ? WHERE id = ?";
     $stmt = $conn->prepare($updateItemQuery);
     $result = $stmt->execute([$quantity, $harvestDate, $itemId]);
 
     if ($stmt->rowCount() === 0) {
         throw new Exception("Failed to update item quantity");
     }    // Insert into item_history table
-    $insertHistoryQuery = "INSERT INTO item_history (predefined_item_id, quantity, harvest_date, notes, change_type, date) VALUES ($1, $2, $3, $4, 'increase', CURRENT_TIMESTAMP)";
+    $insertHistoryQuery = "INSERT INTO item_history (predefined_item_id, quantity, harvest_date, notes, change_type, date) VALUES (?, ?, ?, ?, 'increase', CURRENT_TIMESTAMP)";
     $stmt = $conn->prepare($insertHistoryQuery);
     $stmt->execute([$predefinedItemId, $quantity, $harvestDate, $notes]);
 
     // Insert into action_logs table
     $insertLogQuery = "INSERT INTO action_logs (user_id, action_type, description, timestamp) 
-                      VALUES ($1, 'increase_stock', $2, CURRENT_TIMESTAMP)";
+                      VALUES (?, 'increase_stock', ?, CURRENT_TIMESTAMP)";
     $logDescription = "Increased stock for item ID: $itemId by $quantity units.";
     $stmt = $conn->prepare($insertLogQuery);
     $stmt->execute([$userId, $logDescription]);
-    $stmt->execute();
 
     echo json_encode(["success" => true, "message" => "Stock increased and logged successfully"]);
 

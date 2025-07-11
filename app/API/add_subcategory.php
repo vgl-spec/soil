@@ -16,8 +16,8 @@ if (!$main_category_id || !$name || !$label) {
     exit;
 }
 
-// Use the correct table and column names with PostgreSQL syntax
-$stmt = $conn->prepare("INSERT INTO subcategories (category_id, name, label, unit) VALUES ($1, $2, $3, $4) RETURNING id");
+// Use the correct table and column names with PDO syntax
+$stmt = $conn->prepare("INSERT INTO subcategories (category_id, name, label, unit) VALUES (?, ?, ?, ?) RETURNING id");
 $result = $stmt->execute([$main_category_id, $name, $label, $unit]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
