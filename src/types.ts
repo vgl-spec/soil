@@ -37,8 +37,8 @@ export interface Category {
 export interface HistoryEntry {
   id: number;
   name: string;
-  mainCategory: string;
-  subcategory: string;
+  mainCategory: string | number | null;
+  subcategory: string | number;
   quantity: number;
   unit: string;
   harvestDate: string | null;
@@ -54,8 +54,8 @@ export interface HistoryEntry {
 export interface ConsolidatedItem {
   id: number;
   name: string;
-  mainCategory: string;
-  subcategory: string;
+  mainCategory: string | number | null;
+  subcategory: string | number;
   quantity: number;
   unit: string;
   harvestDate: string | null;

@@ -55,7 +55,7 @@ export const getSubcategoryNameById = (categories: Category, categoryName: strin
 };
 
 // Helper function to get category label for display
-export const getCategoryLabel = (categories: Category, mainCategoryId: string | number, subcategoryId: string | number): string => {
+export const getCategoryLabel = (categories: Category, mainCategoryId: string | number | null, subcategoryId: string | number): string => {
   console.log('getCategoryLabel called with:', { mainCategoryId, subcategoryId, categories });
   
   // Handle case where categories isn't loaded yet
@@ -64,7 +64,28 @@ export const getCategoryLabel = (categories: Category, mainCategoryId: string | 
     return `Loading...`;
   }
   
-  // Try to find category by ID
+  // If mainCategoryId is null, try to find it by looking through subcategories
+  if (mainCategoryId === null || mainCategoryId === undefined) {
+    console.log('mainCategoryId is null, searching by subcategory ID:', subcategoryId);
+    
+    // Search through all categories to find which one contains this subcategory
+    for (const [categoryName, categoryData] of Object.entries(categories)) {
+      if (categoryData.subcategories) {
+        for (const [subName, subData] of Object.entries(categoryData.subcategories)) {
+          if (subData.id === Number(subcategoryId)) {
+            console.log(`Found subcategory ${subcategoryId} in category ${categoryName}`);
+            const mainLabel = categoryData.label || categoryName;
+            const subLabel = subData.label || subName;
+            return `${mainLabel}/${subLabel}`;
+          }
+        }
+      }
+    }
+    console.log('Could not find subcategory', subcategoryId, 'in any category');
+    return `Unknown/${subcategoryId}`;
+  }
+  
+  // Try to find category by ID (original logic)
   const categoryName = getCategoryNameById(categories, Number(mainCategoryId));
   console.log('Found categoryName:', categoryName);
   
