@@ -50,6 +50,9 @@ error_log("First query executed successfully");
 
 $items = [];
 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+    // Add debugging to see what's in the database
+    error_log("Database row: " . print_r($row, true));
+    
     $items[] = [
         "id" => (int)$row['id'],
         "predefined_item_id" => (int)$row['predefined_item_id'],
@@ -118,6 +121,7 @@ if (ob_get_level()) {
 }
 
 echo json_encode([
+    "debug" => "Database debugging enabled",
     "items" => $items,
     "history" => $history
 ]);
