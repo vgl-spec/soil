@@ -11,6 +11,24 @@ try {
         throw new Exception("Database connection failed");
     }
 
+    // First, let's fix any existing predefined_items that have null main_category_id
+    $fixQuery = "
+        UPDATE predefined_items 
+        SET main_category_id = (
+            SELECT category_id 
+            FROM subcategories 
+            WHERE subcategories.id = predefined_items.subcat_id
+        )
+        WHERE main_category_id IS NULL AND subcat_id IS NOT NULL
+    ";
+    
+    try {
+        $conn->exec($fixQuery);
+        error_log("Fixed existing predefined_items with null main_category_id");
+    } catch (Exception $e) {
+        error_log("Warning: Could not fix existing predefined_items: " . $e->getMessage());
+    }
+
 $data = json_decode(file_get_contents("php://input"), true);
 
 $main_category_id = $data['main_category_id'] ?? null;
