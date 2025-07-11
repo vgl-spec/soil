@@ -342,58 +342,69 @@ const OperatorDashboard: React.FC = () => {
             )}
           </main>
           <Footer />
-
-          {showAddModal && (
-            <AddItemModal
-              categories={categories}
-              onClose={() => setShowAddModal(false)}
-              onAddItem={() => {
-                setShowAddModal(false);
-                fetchItems();
-              }}
-            />
-          )}
-
-          {showCategoryModal && (
-            <ManageCategoriesModal
-              categories={categories}
-              onUpdateCategories={(updatedCategories) => setCategories(updatedCategories)}
-              onClose={() => setShowCategoryModal(false)}
-            />
-          )}
-
-          {showReduceModal && selectedItem && (
-            <ReduceStockModal
-              item={selectedItem}
-              onClose={() => setShowReduceModal(false)}
-              onReduceStock={() => {
-                setShowReduceModal(false);
-                fetchItems();
-              }}
-            />
-          )}
-
-          {showIncreaseModal && selectedItem && (
-            <IncreaseStockModal
-              item={selectedItem}
-              onClose={() => setShowIncreaseModal(false)}
-              onIncreaseStock={() => {
-                setShowIncreaseModal(false);
-                fetchItems();
-              }}
-            />
-          )}
-
-          {showHistoryModal && selectedItem && (
-            <ItemHistoryModal
-              item={selectedItem}
-              historyEntries={selectedHistory}
-              categories={categories}
-              onClose={() => setShowHistoryModal(false)}
-            />
-          )}
         </div>
       </div>
+
+      {/* Modals positioned above the main container */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <AddItemModal
+            categories={categories}
+            onClose={() => setShowAddModal(false)}
+            onAddItem={() => {
+              setShowAddModal(false);
+              fetchItems();
+            }}
+          />
+        </div>
+      )}
+
+      {showCategoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <ManageCategoriesModal
+            categories={categories}
+            onUpdateCategories={(updatedCategories) => setCategories(updatedCategories)}
+            onClose={() => setShowCategoryModal(false)}
+          />
+        </div>
+      )}
+
+      {showReduceModal && selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <ReduceStockModal
+            item={selectedItem}
+            onClose={() => setShowReduceModal(false)}
+            onReduceStock={() => {
+              setShowReduceModal(false);
+              fetchItems();
+            }}
+          />
+        </div>
+      )}
+
+      {showIncreaseModal && selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <IncreaseStockModal
+            item={selectedItem}
+            onClose={() => setShowIncreaseModal(false)}
+            onIncreaseStock={() => {
+              setShowIncreaseModal(false);
+              fetchItems();
+            }}
+          />
+        </div>
+      )}
+
+      {showHistoryModal && selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <ItemHistoryModal
+            item={selectedItem}
+            historyEntries={selectedHistory}
+            categories={categories}
+            onClose={() => setShowHistoryModal(false)}
+          />
+        </div>
+      )}
     </div>
   );
 };
