@@ -32,8 +32,8 @@ SELECT
     i.updated_at,
     p.name,
     p.unit,
-    COALESCE(p.main_category_id, 0) as mainCategory,
-    COALESCE(p.subcat_id, 0) as subcategory
+    p.main_category_id as mainCategory,
+    p.subcat_id as subcategory
 FROM items i
 INNER JOIN predefined_items p ON i.predefined_item_id = p.id
 ORDER BY i.created_at DESC;
@@ -50,15 +50,12 @@ error_log("First query executed successfully");
 
 $items = [];
 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-    // Add debugging to see what's in the database
-    error_log("Database row: " . print_r($row, true));
-    
     $items[] = [
         "id" => (int)$row['id'],
         "predefined_item_id" => (int)$row['predefined_item_id'],
         "name" => $row['name'],
-        "mainCategory" => $row['mainCategory'],
-        "subcategory" => $row['subcategory'],
+        "mainCategory" => $row['mainCategory'] ? (int)$row['mainCategory'] : null,
+        "subcategory" => $row['subcategory'] ? (int)$row['subcategory'] : null,
         "quantity" => (int)$row['quantity'],
         "unit" => $row['unit'],
         "harvestDate" => $row['harvest_date']
@@ -81,8 +78,8 @@ SELECT
     END AS harvest_date,
     p.name,
     p.unit,
-    COALESCE(p.main_category_id, 0) AS mainCategory,
-    COALESCE(p.subcat_id, 0) AS subcategory
+    p.main_category_id AS mainCategory,
+    p.subcat_id AS subcategory
 FROM item_history h
 INNER JOIN predefined_items p ON h.predefined_item_id = p.id
 ORDER BY h.date DESC;
@@ -103,8 +100,8 @@ while ($row = $historyResult->fetch(PDO::FETCH_ASSOC)) {
         "id" => (int)$row['id'],
         "predefined_item_id" => (int)$row['predefined_item_id'],
         "name" => $row['name'],
-        "mainCategory" => $row['mainCategory'],
-        "subcategory" => $row['subcategory'],
+        "mainCategory" => $row['mainCategory'] ? (int)$row['mainCategory'] : null,
+        "subcategory" => $row['subcategory'] ? (int)$row['subcategory'] : null,
         "quantity" => (int)$row['quantity'],
         "unit" => $row['unit'],
         "harvestDate" => $row['harvest_date'],
@@ -121,7 +118,6 @@ if (ob_get_level()) {
 }
 
 echo json_encode([
-    "debug" => "Database debugging enabled",
     "items" => $items,
     "history" => $history
 ]);
