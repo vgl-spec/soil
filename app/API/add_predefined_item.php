@@ -68,7 +68,7 @@ if ($row) {
 }
 
 // Insert new predefined item
-$insertQuery = "INSERT INTO predefined_items (main_category_id, subcat_id, name, unit) VALUES (?, ?, ?, ?) RETURNING id";
+$insertQuery = "INSERT INTO predefined_items (main_category_id, subcat_id, name, unit) VALUES (?, ?, ?, ?)";
 $stmt = $conn->prepare($insertQuery);
 $result = $stmt->execute([$main_category_id, $subcat_id, $name, $unit]);
 
@@ -78,11 +78,17 @@ if (!$result) {
     throw new Exception('Failed to execute insert query: ' . $errorInfo[2]);
 }
 
-$row = $stmt->fetch(PDO::FETCH_ASSOC);    if ($row) {
-        error_log("Successfully added predefined item with ID: " . $row['id']);
-        echo json_encode(['success' => true, 'id' => (int)$row['id']]);
+$lastId = $conn->lastInsertId();
+
+if ($lastId) {
+        error_log("Successfully added predefined item with ID: " . $lastId);
+        echo json_encode(['success' => true, 'id' => (int)$lastId]);
     } else {
-        throw new Exception('Failed to insert predefined item');
+        // If lastInsertId returns something falsy (e.g., 0 if the table doesn't have auto-increment or "00000" for some drivers when no rows affected)
+        // but the execute was successful, it might indicate a different issue or configuration.
+        // However, for typical auto-increment PKs, a truthy value is expected.
+        error_log("Failed to retrieve lastInsertId after successful insert. MainCategoryID: $main_category_id, SubcatID: $subcat_id, Name: $name");
+        throw new Exception('Failed to retrieve ID for predefined item after insert.');
     }
 
 } catch (Exception $e) {
