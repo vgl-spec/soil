@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Add Predefined Item - Local</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        pre { 
+            background: #f0f0f0; 
+            padding: 10px; 
+            overflow-x: auto; 
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        button { 
+            padding: 10px 15px; 
+            margin: 5px; 
+            background: #007cba; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 4px;
+        }
+        button:hover { background: #005a8b; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        input, select { 
+            padding: 8px; 
+            margin: 5px; 
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+        .error { color: #d32f2f; }
+        .success { color: #2e7d32; }
+        .info { color: #1976d2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug Add Predefined Item (Local)</h1>
+        <p class="info">Testing with local XAMPP API: <code>http://localhost/soil/app/API/</code></p>
+        
+        <div class="section">
+            <h2>1. Check API Status</h2>
+            <button onclick="checkAPIStatus()">Check Local API Status</button>
+            <pre id="apiStatus">Click button to check API status...</pre>
+        </div>
+        
+        <div class="section">
+            <h2>2. Load Categories Data</h2>
+            <button onclick="loadCategories()">Load Categories</button>
+            <pre id="categoriesData">Click "Load Categories" to see data...</pre>
+        </div>
+        
+        <div class="section">
+            <h2>3. Test Add Predefined Item</h2>
+            <div class="form-group">
+                <label>Category ID:</label>
+                <input type="number" id="categoryId" placeholder="e.g., 1" value="1">
+                <small>(Check categories data above for valid IDs)</small>
+            </div>
+            <div class="form-group">
+                <label>Subcategory ID:</label>
+                <input type="number" id="subcategoryId" placeholder="e.g., 1" value="1">
+                <small>(Check categories data above for valid IDs)</small>
+            </div>
+            <div class="form-group">
+                <label>Item Name:</label>
+                <input type="text" id="itemName" placeholder="Test Item" value="">
+            </div>
+            <div class="form-group">
+                <label>Unit:</label>
+                <select id="unit">
+                    <option value="kg">kg</option>
+                    <option value="pcs">pcs</option>
+                </select>
+            </div>
+            <button onclick="testAddItem()">Test Add Item</button>
+            <pre id="testResult">Results will appear here...</pre>
+        </div>
+
+        <div class="section">
+            <h2>4. Debug Information</h2>
+            <button onclick="getDebugInfo()">Get Debug Info</button>
+            <pre id="debugInfo">Click to get debug information...</pre>
+        </div>
+    </div>
+
+    <script>
+        const LOCAL_API_URL = 'http://localhost/soil/app/API';
+        
+        async function checkAPIStatus() {
+            const output = document.getElementById('apiStatus');
+            output.textContent = 'Checking API status...';
+            
+            try {
+                const response = await fetch(`${LOCAL_API_URL}/status.php`);
+                const data = await response.json();
+                output.textContent = `Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+                
+                if (response.ok) {
+                    output.className = 'success';
+                } else {
+                    output.className = 'error';
+                }
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+                output.className = 'error';
+            }
+        }
+        
+        async function loadCategories() {
+            const output = document.getElementById('categoriesData');
+            output.textContent = 'Loading categories...';
+            
+            try {
+                const response = await fetch(`${LOCAL_API_URL}/categories.php`);
+                const data = await response.json();
+                
+                output.textContent = `Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+                
+                if (response.ok && data) {
+                    output.className = 'success';
+                    // Auto-populate some fields if data is available
+                    populateFormFromCategories(data);
+                } else {
+                    output.className = 'error';
+                }
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+                output.className = 'error';
+            }
+        }
+        
+        function populateFormFromCategories(categories) {
+            // Try to find the first available category and subcategory
+            for (const [catName, catData] of Object.entries(categories)) {
+                if (catData.id) {
+                    document.getElementById('categoryId').value = catData.id;
+                    
+                    // Find first subcategory
+                    for (const [subName, subData] of Object.entries(catData.subcategories)) {
+                        if (subData.id) {
+                            document.getElementById('subcategoryId').value = subData.id;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            // Set a unique test item name
+            document.getElementById('itemName').value = `Test Item ${Date.now()}`;
+        }
+        
+        async function testAddItem() {
+            const output = document.getElementById('testResult');
+            output.textContent = 'Testing add item...';
+            output.className = '';
+            
+            const data = {
+                main_category_id: parseInt(document.getElementById('categoryId').value),
+                subcat_id: parseInt(document.getElementById('subcategoryId').value),
+                name: document.getElementById('itemName').value || `Test Item ${Date.now()}`,
+                unit: document.getElementById('unit').value
+            };
+            
+            console.log('Sending data to local API:', data);
+            
+            try {
+                const response = await fetch(`${LOCAL_API_URL}/add_predefined_item.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const responseText = await response.text();
+                console.log('Response status:', response.status);
+                console.log('Response text:', responseText);
+                
+                let outputText = `Status: ${response.status}\n\nRaw Response:\n${responseText}`;
+                
+                if (response.status === 200) {
+                    try {
+                        const jsonData = JSON.parse(responseText);
+                        outputText += `\n\nParsed JSON:\n${JSON.stringify(jsonData, null, 2)}`;
+                        output.className = 'success';
+                    } catch (e) {
+                        outputText += `\n\nNote: Response is not valid JSON`;
+                        output.className = 'error';
+                    }
+                } else {
+                    output.className = 'error';
+                }
+                
+                output.textContent = outputText;
+                
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+                output.className = 'error';
+                console.error('Error:', error);
+            }
+        }
+        
+        async function getDebugInfo() {
+            const output = document.getElementById('debugInfo');
+            output.textContent = 'Getting debug info...';
+            
+            try {
+                const response = await fetch(`${LOCAL_API_URL}/debug_api.php`);
+                const data = await response.json();
+                output.textContent = `Debug Info:\n${JSON.stringify(data, null, 2)}`;
+                output.className = 'info';
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+                output.className = 'error';
+            }
+        }
+        
+        // Auto-load API status on page load
+        window.onload = function() {
+            checkAPIStatus();
+        };
+    </script>
+</body>
+</html>

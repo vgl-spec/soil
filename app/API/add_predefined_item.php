@@ -31,13 +31,35 @@ try {
 
 $data = json_decode(file_get_contents("php://input"), true);
 
+// Enhanced error logging
+error_log("Raw input data: " . file_get_contents("php://input"));
+error_log("Decoded data: " . print_r($data, true));
+
 $main_category_id = $data['main_category_id'] ?? null;
 $subcat_id = $data['subcat_id'] ?? null;
 $name = $data['name'] ?? null;
-$unit = $data['unit'] ?? 'kg';    if (!$main_category_id || !$subcat_id || !$name) {
-        echo json_encode(['success' => false, 'message' => 'Missing required fields']);
-        exit;
-    }
+$unit = $data['unit'] ?? 'kg';
+
+// Convert to integers if they're strings
+if ($main_category_id !== null) {
+    $main_category_id = (int)$main_category_id;
+}
+if ($subcat_id !== null) {
+    $subcat_id = (int)$subcat_id;
+}
+
+error_log("Processed values: main_category_id=$main_category_id, subcat_id=$subcat_id, name=$name, unit=$unit");
+
+if (!$main_category_id || !$subcat_id || !$name) {
+    $missingFields = [];
+    if (!$main_category_id) $missingFields[] = 'main_category_id';
+    if (!$subcat_id) $missingFields[] = 'subcat_id';
+    if (!$name) $missingFields[] = 'name';
+    
+    error_log("Missing required fields: " . implode(', ', $missingFields));
+    echo json_encode(['success' => false, 'message' => 'Missing required fields: ' . implode(', ', $missingFields)]);
+    exit;
+}
 
     error_log("Adding predefined item: main_category_id=$main_category_id, subcat_id=$subcat_id, name=$name, unit=$unit");
 
@@ -52,7 +74,28 @@ $validation = $validateStmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$validation) {
     error_log("Invalid category or subcategory: main_category_id=$main_category_id, subcat_id=$subcat_id");
-    echo json_encode(['success' => false, 'message' => 'Invalid category or subcategory']);
+    
+    // Let's check what exists separately for better error reporting
+    $catCheck = $conn->prepare("SELECT id FROM categories WHERE id = ?");
+    $catCheck->execute([$main_category_id]);
+    $catExists = $catCheck->fetch();
+    
+    $subCheck = $conn->prepare("SELECT id, category_id FROM subcategories WHERE id = ?");
+    $subCheck->execute([$subcat_id]);
+    $subExists = $subCheck->fetch();
+    
+    $errorMsg = "Validation failed: ";
+    if (!$catExists) {
+        $errorMsg .= "Category ID $main_category_id does not exist. ";
+    }
+    if (!$subExists) {
+        $errorMsg .= "Subcategory ID $subcat_id does not exist. ";
+    } elseif ($subExists['category_id'] != $main_category_id) {
+        $errorMsg .= "Subcategory ID $subcat_id does not belong to category ID $main_category_id (belongs to {$subExists['category_id']}). ";
+    }
+    
+    error_log($errorMsg);
+    echo json_encode(['success' => false, 'message' => $errorMsg]);
     exit;
 }
 
@@ -75,7 +118,39 @@ $result = $stmt->execute([$main_category_id, $subcat_id, $name, $unit]);
 if (!$result) {
     $errorInfo = $stmt->errorInfo();
     error_log("SQL Error: " . print_r($errorInfo, true));
-    throw new Exception('Failed to execute insert query: ' . $errorInfo[2]);
+    
+    // Check if it's a unique constraint violation (sequence issue)
+    if (strpos($errorInfo[2], 'duplicate key value violates unique constraint') !== false) {
+        error_log("Detected sequence issue - attempting to fix...");
+        
+        // Try to fix the sequence automatically
+        try {
+            $maxIdQuery = "SELECT MAX(id) as max_id FROM predefined_items";
+            $maxStmt = $conn->query($maxIdQuery);
+            $maxResult = $maxStmt->fetch(PDO::FETCH_ASSOC);
+            $maxId = $maxResult['max_id'] ?? 0;
+            
+            $newSeqValue = $maxId + 1;
+            $resetQuery = "SELECT setval('predefined_items_id_seq', $newSeqValue, false)";
+            $conn->query($resetQuery);
+            
+            error_log("Sequence reset to: $newSeqValue");
+            
+            // Try the insert again
+            $result = $stmt->execute([$main_category_id, $subcat_id, $name, $unit]);
+            
+            if ($result) {
+                error_log("Insert successful after sequence fix");
+            } else {
+                throw new Exception('Insert failed even after sequence fix: ' . print_r($stmt->errorInfo(), true));
+            }
+        } catch (Exception $seqError) {
+            error_log("Failed to fix sequence: " . $seqError->getMessage());
+            throw new Exception('Database sequence error. Please contact administrator. Error: ' . $errorInfo[2]);
+        }
+    } else {
+        throw new Exception('Failed to execute insert query: ' . $errorInfo[2]);
+    }
 }
 
 $lastId = $conn->lastInsertId();
