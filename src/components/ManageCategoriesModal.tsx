@@ -111,13 +111,6 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
 
   // Handle adding a predefined item
   const handleAddPredefinedItem = async () => {
-    console.log(
-      "Attempting to add predefined item:",
-      newItemName,
-      "to subcategory:",
-      selectedSubcategory
-    );
-
     if (!selectedSubcategory || !workingCategories[categoryType]) return;
 
     if (!newItemName.trim()) {
@@ -155,24 +148,12 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
     const name = newItemName.trim();
     const unit = newItemUnit;
 
-    // Enhanced validation and logging
-    console.log("Current category data:", workingCategories[categoryType]);
-    console.log("Selected subcategory data:", workingCategories[categoryType].subcategories[selectedSubcategory]);
-    
     if (!main_category_id || !subcat_id) {
       alert("Invalid category or subcategory selected. Please refresh and try again.");
-      console.error("Missing IDs:", { main_category_id, subcat_id });
       return;
     }
 
     try {
-      console.log("Sending request to add_predefined_item.php with:", {
-        main_category_id: Number(main_category_id),
-        subcat_id: Number(subcat_id),
-        name,
-        unit,
-      });
-
       const response = await axios.post(
         `${API_BASE_URL}/add_predefined_item.php`,
         {
@@ -184,11 +165,8 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
-          timeout: 10000 // 10 second timeout
         }
       );
-
-      console.log("Response from add_predefined_item.php:", response.data);
 
       if (response.data.success) {
         // Add to local state for immediate UI update
@@ -203,29 +181,14 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
         setWorkingCategories(updatedCategories);
         setNewItemName("");
         alert("Predefined item added!");
-        console.log("Predefined item added to local state:", {
-          name: newItemName,
-          unit: newItemUnit,
-          subcategory: selectedSubcategory,
-          category: categoryType,
-        });
       } else {
-        console.error("API returned error:", response.data);
         alert(response.data.message || "Failed to add predefined item.");
       }
     } catch (error: any) {
-      console.error("Full error object:", error);
-      console.error("Error response:", error.response?.data);
-      console.error("Error status:", error.response?.status);
-      console.error("Error headers:", error.response?.headers);
-      
       let errorMessage = "Error adding predefined item.";
       if (error.response?.data?.message) {
         errorMessage += " " + error.response.data.message;
-      } else if (error.message) {
-        errorMessage += " " + error.message;
       }
-      
       alert(errorMessage);
     }
   };

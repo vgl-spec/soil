@@ -31,10 +31,6 @@ try {
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-// Enhanced error logging
-error_log("Raw input data: " . file_get_contents("php://input"));
-error_log("Decoded data: " . print_r($data, true));
-
 $main_category_id = $data['main_category_id'] ?? null;
 $subcat_id = $data['subcat_id'] ?? null;
 $name = $data['name'] ?? null;
@@ -48,16 +44,8 @@ if ($subcat_id !== null) {
     $subcat_id = (int)$subcat_id;
 }
 
-error_log("Processed values: main_category_id=$main_category_id, subcat_id=$subcat_id, name=$name, unit=$unit");
-
 if (!$main_category_id || !$subcat_id || !$name) {
-    $missingFields = [];
-    if (!$main_category_id) $missingFields[] = 'main_category_id';
-    if (!$subcat_id) $missingFields[] = 'subcat_id';
-    if (!$name) $missingFields[] = 'name';
-    
-    error_log("Missing required fields: " . implode(', ', $missingFields));
-    echo json_encode(['success' => false, 'message' => 'Missing required fields: ' . implode(', ', $missingFields)]);
+    echo json_encode(['success' => false, 'message' => 'Missing required fields']);
     exit;
 }
 
@@ -73,29 +61,7 @@ $validateStmt->execute([$main_category_id, $subcat_id]);
 $validation = $validateStmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$validation) {
-    error_log("Invalid category or subcategory: main_category_id=$main_category_id, subcat_id=$subcat_id");
-    
-    // Let's check what exists separately for better error reporting
-    $catCheck = $conn->prepare("SELECT id FROM categories WHERE id = ?");
-    $catCheck->execute([$main_category_id]);
-    $catExists = $catCheck->fetch();
-    
-    $subCheck = $conn->prepare("SELECT id, category_id FROM subcategories WHERE id = ?");
-    $subCheck->execute([$subcat_id]);
-    $subExists = $subCheck->fetch();
-    
-    $errorMsg = "Validation failed: ";
-    if (!$catExists) {
-        $errorMsg .= "Category ID $main_category_id does not exist. ";
-    }
-    if (!$subExists) {
-        $errorMsg .= "Subcategory ID $subcat_id does not exist. ";
-    } elseif ($subExists['category_id'] != $main_category_id) {
-        $errorMsg .= "Subcategory ID $subcat_id does not belong to category ID $main_category_id (belongs to {$subExists['category_id']}). ";
-    }
-    
-    error_log($errorMsg);
-    echo json_encode(['success' => false, 'message' => $errorMsg]);
+    echo json_encode(['success' => false, 'message' => 'Invalid category or subcategory']);
     exit;
 }
 
@@ -121,8 +87,6 @@ if (!$result) {
     
     // Check if it's a unique constraint violation (sequence issue)
     if (strpos($errorInfo[2], 'duplicate key value violates unique constraint') !== false) {
-        error_log("Detected sequence issue - attempting to fix...");
-        
         // Try to fix the sequence automatically
         try {
             $maxIdQuery = "SELECT MAX(id) as max_id FROM predefined_items";
@@ -134,19 +98,14 @@ if (!$result) {
             $resetQuery = "SELECT setval('predefined_items_id_seq', $newSeqValue, false)";
             $conn->query($resetQuery);
             
-            error_log("Sequence reset to: $newSeqValue");
-            
             // Try the insert again
             $result = $stmt->execute([$main_category_id, $subcat_id, $name, $unit]);
             
-            if ($result) {
-                error_log("Insert successful after sequence fix");
-            } else {
-                throw new Exception('Insert failed even after sequence fix: ' . print_r($stmt->errorInfo(), true));
+            if (!$result) {
+                throw new Exception('Insert failed even after sequence fix');
             }
         } catch (Exception $seqError) {
-            error_log("Failed to fix sequence: " . $seqError->getMessage());
-            throw new Exception('Database sequence error. Please contact administrator. Error: ' . $errorInfo[2]);
+            throw new Exception('Database sequence error. Please contact administrator.');
         }
     } else {
         throw new Exception('Failed to execute insert query: ' . $errorInfo[2]);
@@ -156,15 +115,10 @@ if (!$result) {
 $lastId = $conn->lastInsertId();
 
 if ($lastId) {
-        error_log("Successfully added predefined item with ID: " . $lastId);
-        echo json_encode(['success' => true, 'id' => (int)$lastId]);
-    } else {
-        // If lastInsertId returns something falsy (e.g., 0 if the table doesn't have auto-increment or "00000" for some drivers when no rows affected)
-        // but the execute was successful, it might indicate a different issue or configuration.
-        // However, for typical auto-increment PKs, a truthy value is expected.
-        error_log("Failed to retrieve lastInsertId after successful insert. MainCategoryID: $main_category_id, SubcatID: $subcat_id, Name: $name");
-        throw new Exception('Failed to retrieve ID for predefined item after insert.');
-    }
+    echo json_encode(['success' => true, 'id' => (int)$lastId]);
+} else {
+    throw new Exception('Failed to retrieve ID for predefined item after insert.');
+}
 
 } catch (Exception $e) {
     error_log("API Error in add_predefined_item.php: " . $e->getMessage());
