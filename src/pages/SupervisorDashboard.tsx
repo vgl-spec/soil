@@ -78,6 +78,12 @@ const SupervisorDashboard: React.FC = () => {
       cancelButtonText: 'Cancel',
       confirmButtonColor: '#dc2626',
       cancelButtonColor: '#6b7280',
+      backdrop: true,
+      allowOutsideClick: false,
+      allowEscapeKey: true,
+      allowEnterKey: false,
+      focusConfirm: false,
+      focusCancel: false,
       inputValidator: (value) => {
         if (value !== 'CLEAR LOGS') {
           return 'You must type "CLEAR LOGS" exactly to confirm!';
@@ -89,7 +95,10 @@ const SupervisorDashboard: React.FC = () => {
         title: 'swal2-title-custom',
         confirmButton: 'swal2-confirm-custom',
         cancelButton: 'swal2-cancel-custom'
-      }
+      },
+      // Mobile-responsive settings
+      width: window.innerWidth < 640 ? '90vw' : '32rem',
+      padding: window.innerWidth < 640 ? '1rem' : '1.5rem'
     });
 
     if (result.isConfirmed) {
@@ -99,6 +108,10 @@ const SupervisorDashboard: React.FC = () => {
           title: 'Processing...',
           html: 'Downloading logs and clearing database...',
           allowOutsideClick: false,
+          allowEscapeKey: false,
+          showConfirmButton: false,
+          width: window.innerWidth < 640 ? '90vw' : '24rem',
+          padding: window.innerWidth < 640 ? '1rem' : '1.5rem',
           didOpen: () => {
             Swal.showLoading();
           }
@@ -118,7 +131,9 @@ const SupervisorDashboard: React.FC = () => {
               icon: 'error',
               title: 'Authentication Required',
               text: 'User authentication required for this action',
-              confirmButtonColor: '#dc2626'
+              confirmButtonColor: '#dc2626',
+              width: window.innerWidth < 640 ? '90vw' : '24rem',
+              padding: window.innerWidth < 640 ? '1rem' : '1.5rem'
             });
             return;
           }
@@ -138,7 +153,9 @@ const SupervisorDashboard: React.FC = () => {
                   <p>📥 Logs have been downloaded to your device</p>
                 </div>
               `,
-              confirmButtonColor: '#059669'
+              confirmButtonColor: '#059669',
+              width: window.innerWidth < 640 ? '90vw' : '28rem',
+              padding: window.innerWidth < 640 ? '1rem' : '1.5rem'
             });
             
             // Refresh the logs display
@@ -151,7 +168,9 @@ const SupervisorDashboard: React.FC = () => {
               icon: 'error',
               title: 'Failed to Clear Logs',
               text: response.data.message,
-              confirmButtonColor: '#dc2626'
+              confirmButtonColor: '#dc2626',
+              width: window.innerWidth < 640 ? '90vw' : '24rem',
+              padding: window.innerWidth < 640 ? '1rem' : '1.5rem'
             });
           }
         }, 2000); // Wait 2 seconds for download to start
@@ -162,7 +181,9 @@ const SupervisorDashboard: React.FC = () => {
           icon: 'error',
           title: 'Error Occurred',
           text: 'An error occurred while clearing logs',
-          confirmButtonColor: '#dc2626'
+          confirmButtonColor: '#dc2626',
+          width: window.innerWidth < 640 ? '90vw' : '24rem',
+          padding: window.innerWidth < 640 ? '1rem' : '1.5rem'
         });
       }
     }
@@ -205,8 +226,8 @@ const SupervisorDashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center p-2 sm:p-4">
-      <div className="w-full max-w-screen-xl bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-[98vh] sm:h-[95vh]">
+    <div className="h-screen w-screen bg-black bg-opacity-40 flex items-center justify-center p-1 sm:p-2">
+      <div className="w-full h-full max-w-screen-xl bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col overflow-hidden">
         <div
           className="absolute inset-0 rounded-lg"
           style={{
@@ -218,9 +239,9 @@ const SupervisorDashboard: React.FC = () => {
         />
         <div className="relative z-10 flex flex-col h-full">
           <Header />
-          <main className="flex-1 p-2 sm:p-6 max-w-6xl mx-auto bg-white shadow rounded-lg rounded-tl-none rounded-tr-none flex flex-col min-h-0">
-            <div className="flex items-center justify-between mb-4 gap-3">
-              <h2 className="text-xl sm:text-2xl font-bold">Operator Logs</h2>
+          <main className="flex-1 p-2 sm:p-4 lg:p-6 bg-white shadow rounded-lg rounded-tl-none rounded-tr-none flex flex-col min-h-0 overflow-hidden">
+            <div className="flex items-center justify-between mb-2 sm:mb-4 gap-2">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Operator Logs</h2>
               <div className="flex gap-1 sm:gap-2">
                 <button
                   onClick={handleDownloadLogs}

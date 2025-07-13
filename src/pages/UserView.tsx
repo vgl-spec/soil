@@ -93,8 +93,8 @@ const UserView: React.FC = () => {
     }  };
 
   return (
-    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center p-2 sm:p-4">
-      <div className="w-full max-w-screen-xl bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-[98vh] sm:h-[95vh]">
+    <div className="h-screen w-screen bg-black bg-opacity-40 flex items-center justify-center p-1 sm:p-2">
+      <div className="w-full h-full max-w-screen-xl bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col overflow-hidden">
         <div
           className="absolute inset-0 rounded-lg"
           style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
@@ -102,8 +102,8 @@ const UserView: React.FC = () => {
         />
         <div className="relative z-10 flex flex-col h-full">
           <Header />
-          <main className="flex-1 p-3 sm:p-6 flex flex-col min-h-0">
-            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-6">Inventory Overview</h2>
+          <main className="flex-1 p-2 sm:p-4 lg:p-6 flex flex-col min-h-0 overflow-hidden">
+            <h2 className="text-lg sm:text-xl font-bold mb-2 sm:mb-4">Inventory Overview</h2>
             
             {/* Mobile Card View */}
             <div className="block sm:hidden flex-1 overflow-y-auto space-y-3 min-h-0">

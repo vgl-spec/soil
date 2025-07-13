@@ -43,18 +43,19 @@ const Header: React.FC = () => {
     <>
       <div className="w-full bg-gradient-to-r from-[#8a9b6e] via-[#d4a762] to-[#6b8c85] shadow-md text-white">
         <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-4 py-2 sm:py-3 px-3 sm:px-6">
-          {/* Mobile: Hide some logos, Desktop: Show all */}
+          {/* Always show all 4 logos */}
           <div className="flex items-center gap-1 sm:gap-2">
-            <img src="/logo2.png" alt="QCU Logo" className="h-6 sm:h-10" />
-            <img src="/logo3.png" alt="CWTS Logo" className="h-6 sm:h-10 hidden sm:block" />
-            <img src="/logo5.png" alt="Group Logo" className="h-6 sm:h-10" />
-            <img src="/logo4.png" alt="Talipapa Logo" className="h-6 sm:h-10 hidden sm:block" />
+            <img src="/logo2.png" alt="QCU Logo" className="h-5 sm:h-8 lg:h-10" />
+            <img src="/logo3.png" alt="CWTS Logo" className="h-5 sm:h-8 lg:h-10" />
+            <img src="/logo5.png" alt="Group Logo" className="h-5 sm:h-8 lg:h-10" />
+            <img src="/logo4.png" alt="Talipapa Logo" className="h-5 sm:h-8 lg:h-10" />
           </div>
           
-          {/* Mobile: Shorter title, Desktop: Full title */}
-          <h1 className="text-xs sm:text-lg lg:text-xl font-bold text-white ml-2 sm:ml-4 flex-1 min-w-0">
-            <span className="hidden sm:inline">BRGY TALIPAPA URBAN FARM AND MRF INVENTORY</span>
-            <span className="sm:hidden">TALIPAPA FARM INVENTORY</span>
+          {/* Responsive title that adapts to available space */}
+          <h1 className="text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-white ml-1 sm:ml-2 lg:ml-4 flex-1 min-w-0 truncate">
+            <span className="hidden md:inline">BRGY TALIPAPA URBAN FARM AND MRF INVENTORY</span>
+            <span className="hidden sm:inline md:hidden">TALIPAPA FARM INVENTORY</span>
+            <span className="sm:hidden">FARM INV</span>
           </h1>
           
           <div className="ml-auto relative">

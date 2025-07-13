@@ -303,8 +303,8 @@ const OperatorDashboard: React.FC = () => {
   }, [selectedCategory, selectedSubcategory, categories, consolidatedItems, filteredConsolidatedItems, selectedDateRange, searchQuery]);
 
   return (
-    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center p-2 sm:p-4">
-      <div className="w-full max-w-screen-xl bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-[98vh] sm:h-[95vh]">
+    <div className="h-screen w-screen bg-black bg-opacity-40 flex items-center justify-center p-1 sm:p-2">
+      <div className="w-full h-full max-w-screen-xl bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col overflow-hidden">
         <div
           className="absolute inset-0 rounded-lg"
           style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
@@ -313,10 +313,10 @@ const OperatorDashboard: React.FC = () => {
 
         <div className="relative z-10 flex flex-col h-full">
           <Header />
-          <main className="flex-1 p-3 sm:p-6 flex flex-col min-h-0">
+          <main className="flex-1 p-2 sm:p-4 lg:p-6 flex flex-col min-h-0 overflow-hidden">
 
             {/* Compact header with action buttons */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-3 gap-2">
               <h2 className="text-lg sm:text-xl font-bold">Operator Dashboard</h2>
               
               {/* Compact action buttons */}
@@ -357,7 +357,7 @@ const OperatorDashboard: React.FC = () => {
             {!showReportView ? (
               <>
                 {/* Filter Toggle Button */}
-                <div className="mb-3 flex items-center justify-between">
+                <div className="mb-2 flex items-center justify-between">
                   <button
                     onClick={() => setShowFilters(!showFilters)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm"
@@ -398,7 +398,7 @@ const OperatorDashboard: React.FC = () => {
 
                 {/* Collapsible Filter Section */}
                 {showFilters && (
-                  <div className="mb-3 p-3 bg-gray-50 rounded-lg border">
+                  <div className="mb-2 p-2 sm:p-3 bg-gray-50 rounded-lg border">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 items-end">
                       <div className="col-span-1 sm:col-span-2 lg:col-span-1">
                         <label className="block text-xs font-medium text-gray-700 mb-1">Search:</label>
@@ -465,7 +465,7 @@ const OperatorDashboard: React.FC = () => {
                 )}
                 
                 {/* Compact view mode buttons */}
-                <div className="mb-3 flex gap-1">
+                <div className="mb-2 flex gap-1">
                   <button
                     className={`px-3 py-1.5 rounded text-sm transition-all duration-300 ${
                       viewMode === "consolidated" ? "bg-green-700 text-white shadow-md" : "bg-white border hover:bg-green-50"
@@ -491,7 +491,7 @@ const OperatorDashboard: React.FC = () => {
                 </div>
 
                 {/* Prominent Inventory Table */}
-                <div className="flex-1 overflow-auto max-h-[62vh] sm:max-h-[65vh] rounded border border-gray-300 shadow-lg bg-white">
+                <div className="flex-1 overflow-auto rounded border border-gray-300 shadow-lg bg-white min-h-0">
                   <InventoryTable
                     items={viewMode === "consolidated" ? filteredConsolidatedItems : filteredHistoryItems}
                     viewMode={viewMode}

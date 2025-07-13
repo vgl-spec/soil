@@ -1,0 +1,194 @@
+/* SweetAlert2 Mobile Responsive Styles */
+
+/* Default desktop styles */
+.swal2-popup {
+  font-size: 1rem !important;
+  padding: 1.5rem !important;
+  max-width: 32rem !important;
+  border-radius: 0.75rem !important;
+}
+
+.swal2-title {
+  font-size: 1.5rem !important;
+  padding: 0 0 1rem 0 !important;
+}
+
+.swal2-html-container {
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+}
+
+.swal2-input {
+  font-size: 0.95rem !important;
+  padding: 0.75rem !important;
+  border-radius: 0.5rem !important;
+}
+
+.swal2-actions {
+  gap: 0.75rem !important;
+  margin-top: 1.5rem !important;
+}
+
+.swal2-confirm, .swal2-cancel {
+  font-size: 0.95rem !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 0.5rem !important;
+  font-weight: 600 !important;
+}
+
+/* Mobile styles (screens smaller than 640px) */
+@media (max-width: 640px) {
+  .swal2-popup {
+    font-size: 0.875rem !important;
+    padding: 1rem !important;
+    max-width: 90vw !important;
+    margin: 1rem !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .swal2-title {
+    font-size: 1.125rem !important;
+    padding: 0 0 0.75rem 0 !important;
+    line-height: 1.3 !important;
+  }
+
+  .swal2-html-container {
+    font-size: 0.8rem !important;
+    line-height: 1.4 !important;
+    padding: 0 !important;
+  }
+
+  .swal2-html-container p {
+    margin: 0.5rem 0 !important;
+  }
+
+  .swal2-html-container ul {
+    margin: 0.5rem 0 !important;
+    padding-left: 1rem !important;
+  }
+
+  .swal2-html-container li {
+    margin: 0.25rem 0 !important;
+  }
+
+  .swal2-input {
+    font-size: 0.8rem !important;
+    padding: 0.5rem !important;
+    border-radius: 0.375rem !important;
+    width: 100% !important;
+  }
+
+  .swal2-actions {
+    gap: 0.5rem !important;
+    margin-top: 1rem !important;
+    flex-direction: column !important;
+  }
+
+  .swal2-confirm, .swal2-cancel {
+    font-size: 0.8rem !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 0.375rem !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .swal2-icon {
+    font-size: 2rem !important;
+    width: 3rem !important;
+    height: 3rem !important;
+    margin: 0.5rem auto 1rem auto !important;
+  }
+
+  .swal2-icon-content {
+    font-size: 2rem !important;
+  }
+
+  /* Loading spinner adjustments for mobile */
+  .swal2-loading .swal2-icon {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+
+  /* Input validation error text */
+  .swal2-validation-message {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+}
+
+/* Very small screens (phones in portrait, smaller than 480px) */
+@media (max-width: 480px) {
+  .swal2-popup {
+    font-size: 0.8rem !important;
+    padding: 0.875rem !important;
+    max-width: 95vw !important;
+    margin: 0.5rem !important;
+  }
+
+  .swal2-title {
+    font-size: 1rem !important;
+    padding: 0 0 0.5rem 0 !important;
+  }
+
+  .swal2-html-container {
+    font-size: 0.75rem !important;
+  }
+
+  .swal2-input {
+    font-size: 0.75rem !important;
+    padding: 0.375rem !important;
+  }
+
+  .swal2-confirm, .swal2-cancel {
+    font-size: 0.75rem !important;
+    padding: 0.375rem 0.75rem !important;
+  }
+
+  .swal2-icon {
+    font-size: 1.5rem !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+}
+
+/* Custom classes for specific alerts */
+.swal2-popup-custom {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.swal2-title-custom {
+  color: #374151 !important;
+  font-weight: 700 !important;
+}
+
+.swal2-confirm-custom {
+  background-color: #dc2626 !important;
+  border: none !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.swal2-confirm-custom:hover {
+  background-color: #b91c1c !important;
+}
+
+.swal2-cancel-custom {
+  background-color: #6b7280 !important;
+  border: none !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.swal2-cancel-custom:hover {
+  background-color: #4b5563 !important;
+}
+
+/* Toast notifications (small alerts) */
+.swal2-toast {
+  font-size: 0.875rem !important;
+}
+
+@media (max-width: 640px) {
+  .swal2-toast {
+    font-size: 0.8rem !important;
+    max-width: 90vw !important;
+  }
+}
