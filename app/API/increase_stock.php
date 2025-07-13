@@ -63,10 +63,32 @@ try {
     $stmt = $conn->prepare($insertHistoryQuery);
     $stmt->execute([$predefinedItemId, $quantity, $harvestDate, $notes]);
 
+    // Get predefined item details for better logging
+    $getItemQuery = "SELECT pi.name, pi.unit, c.label as category_label, s.label as subcategory_label 
+                     FROM predefined_items pi 
+                     JOIN categories c ON pi.main_category_id = c.id 
+                     JOIN subcategories s ON pi.subcat_id = s.id 
+                     WHERE pi.id = ?";
+    $getStmt = $conn->prepare($getItemQuery);
+    $getStmt->execute([$predefinedItemId]);
+    $itemDetails = $getStmt->fetch(PDO::FETCH_ASSOC);
+
+    error_log("Predefined item ID: " . $predefinedItemId);
+    error_log("Item details query result: " . json_encode($itemDetails));
+
+    // Create description with item name
+    $logDescription = "Increased stock: quantity $quantity";
+    if ($itemDetails) {
+        $logDescription .= " (" . $itemDetails['name'] . " - " . $itemDetails['unit'] . ") from " . $itemDetails['category_label'] . " > " . $itemDetails['subcategory_label'];
+    } else {
+        $logDescription .= " (item ID: $itemId)";
+    }
+
+    error_log("Final log description: " . $logDescription);
+
     // Insert into action_logs table
     $insertLogQuery = "INSERT INTO action_logs (user_id, action_type, description, timestamp) 
                       VALUES (?, 'increase_stock', ?, CURRENT_TIMESTAMP)";
-    $logDescription = "Increased stock for item ID: $itemId by $quantity units.";
     $stmt = $conn->prepare($insertLogQuery);
     $stmt->execute([$userId, $logDescription]);
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { X, Download, ArrowLeft } from 'lucide-react';
 import { HistoryEntry, Category, ChartData, SummaryData } from '../types';
 import { getConsolidatedInventory, formatDate } from '../utils/inventoryUtils';
+import { showToast } from '../utils/toastUtils';
 
 interface ReportViewProps {
   historyEntries: HistoryEntry[];
@@ -241,7 +242,7 @@ const ReportView: React.FC<ReportViewProps> = ({ historyEntries, categories, onC
       report.style.cssText = originalStyles;
     } catch (err) {
       console.error("PDF Error:", err);
-      alert("Failed to generate PDF. Try again.");
+      showToast.error("PDF Generation Failed", "Failed to generate PDF. Try again.");
     }
   };
 

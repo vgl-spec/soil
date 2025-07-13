@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 import axios from 'axios';
 import { Category, Unit, PredefinedItem, HistoryEntry } from '../types';
 import { checkItemExists } from '../utils/inventoryUtils';
+import { API_BASE_URL } from '../config/api';
+import { showToast, showConfirmation } from '../utils/toastUtils';
 
 interface AddItemModalProps {
   categories: Category;
@@ -63,12 +65,12 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
 
     // Validate input fields
     if (!name.trim()) {
-      alert("Please enter an item name.");
+      showToast.warning("Missing Information", "Please enter an item name.");
       setIsSubmitting(false);
       return;
     }
     if (isNaN(quantity) || quantity <= 0) {
-      alert("Please enter a valid quantity.");
+      showToast.warning("Invalid Quantity", "Please enter a valid quantity.");
       setIsSubmitting(false);
       return;
     }
@@ -76,7 +78,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
     try {
       // Check if the item exists in predefined_items (categories is now required)
       if (!categories || Object.keys(categories).length === 0) {
-        alert('Categories not loaded. Please try again.');
+        showToast.error('Categories Not Loaded', 'Categories not loaded. Please try again.');
         setIsSubmitting(false);
         return;
       }
@@ -99,7 +101,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
           
           console.log('Creating predefined item:', { main_category_id, subcat_id, name, unit });
           
-          const createResponse = await axios.post('https://soil-3tik.onrender.com/API/add_predefined_item.php', {
+          const createResponse = await axios.post(`${API_BASE_URL}/add_predefined_item.php`, {
             main_category_id: Number(main_category_id),
             subcat_id: Number(subcat_id),
             name,
@@ -112,7 +114,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
           });
 
           if (!createResponse.data.success) {
-            alert(`Failed to create predefined item: ${createResponse.data.message}`);
+            showToast.error("Creation Failed", `Failed to create predefined item: ${createResponse.data.message}`);
             setIsSubmitting(false);
             return;
           }
@@ -120,18 +122,23 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
           // Now use the newly created predefined item ID
           const predefinedItemId = createResponse.data.id;
           
+          // Get user data for action logging
+          const userData = localStorage.getItem('user');
+          const user = userData ? JSON.parse(userData) : null;
+          
           // Prepare the payload for the backend
           const payload = {
             predefined_item_id: Number(predefinedItemId),
             quantity: Number(quantity),
             harvest_date: harvestDate,
-            notes: notes || ''
+            notes: notes || '',
+            user_id: user?.id
           };
 
           console.log('Sending payload with new predefined item:', payload);
 
           // Send the payload to the backend
-          const response = await axios.post('https://soil-3tik.onrender.com/API/add_item.php', payload, {
+          const response = await axios.post(`${API_BASE_URL}/add_item.php`, payload, {
             headers: {
               'Content-Type': 'application/json',
             },
@@ -140,7 +147,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
 
           // Handle the backend response
           if (response.data.success) {
-            alert("Item created and added successfully!");
+            showToast.success("Item Created!", "Item created and added successfully!");
 
             // Add the new history entry to the history view
             onAddItem({
@@ -160,33 +167,38 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
             // Close the modal
             onClose();
           } else {
-            alert(response.data.message || "Failed to add item.");
+            showToast.error("Failed to Add Item", response.data.message || "Failed to add item.");
           }
           
         } catch (createError) {
           console.error("Error creating predefined item:", createError);
-          alert("Failed to create predefined item. Please try again.");
+          showToast.error("Creation Error", "Failed to create predefined item. Please try again.");
         }
       } else {
         // Item exists in predefined_items, proceed normally
         if (existing.unit !== unit) {
-          alert(`The item "${name}" already exists with unit "${existing.unit}".`);
+          showToast.warning("Unit Mismatch", `The item "${name}" already exists with unit "${existing.unit}".`);
           setIsSubmitting(false);
           return;
         }
+
+        // Get user data for action logging
+        const userData = localStorage.getItem('user');
+        const user = userData ? JSON.parse(userData) : null;
 
         // Prepare the payload for the backend
         const payload = {
           predefined_item_id: Number(existing.id),
           quantity: Number(quantity),
           harvest_date: harvestDate,
-          notes: notes || ''
+          notes: notes || '',
+          user_id: user?.id
         };
 
         console.log('Sending payload:', payload);
 
         // Send the payload to the backend
-        const response = await axios.post('https://soil-3tik.onrender.com/API/add_item.php', payload, {
+        const response = await axios.post(`${API_BASE_URL}/add_item.php`, payload, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -195,7 +207,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
 
         // Handle the backend response
         if (response.data.success) {
-          alert("Item added successfully!");
+          showToast.success("Item Added!", "Item added successfully!");
 
           // Add the new history entry to the history view
           onAddItem({
@@ -215,34 +227,34 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
           // Close the modal
           onClose();
         } else {
-          alert(response.data.message || "Failed to add item.");
+          showToast.error("Failed to Add Item", response.data.message || "Failed to add item.");
         }
       }
     } catch (error) {
       console.error("Error adding item:", error);
-      alert("An error occurred while adding the item. Please try again.");
+      showToast.error("Error", "An error occurred while adding the item. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
-          <X className="h-6 w-6" />
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-2 sm:p-4 z-50">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 relative">
+        <button onClick={onClose} className="absolute top-3 sm:top-4 right-3 sm:right-4 text-gray-500 hover:text-gray-700">
+          <X className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
 
-        <h2 className="text-xl font-semibold mb-6 pr-8">Add New Item</h2>
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 pr-8">Add New Item</h2>
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
               <label htmlFor="mainCategory" className="block text-sm font-medium text-gray-700 mb-1">
                 Main Category:
               </label>
               <select
                 id="mainCategory"
-                className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-800"
+                className="w-full p-2 sm:p-2 border border-gray-300 rounded-lg bg-white text-gray-800 text-sm sm:text-base"
                 value={mainCategory}
                 onChange={(e) => setMainCategory(e.target.value)}
               >
@@ -260,7 +272,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
               </label>
               <select
                 id="subcategory"
-                className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-800"
+                className="w-full p-2 sm:p-2 border border-gray-300 rounded-lg bg-white text-gray-800 text-sm sm:text-base"
                 value={subcategory}
                 onChange={(e) => setSubcategory(e.target.value)}
               >
@@ -279,7 +291,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
               </label>
               {showPredefinedItems && (
                 <select
-                  className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 mb-2"
+                  className="w-full p-2 sm:p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 mb-2 text-sm sm:text-base"
                   onChange={handlePredefinedItemSelect}
                   defaultValue=""
                 >
@@ -294,8 +306,16 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
                   ))}
                 </select>
               )}
+              <input
+                type="text"
+                id="itemName"
+                className="w-full p-2 sm:p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-sm sm:text-base"
+                placeholder="Enter item name or select above"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
               {showPredefinedItems && (
-                <p className="text-sm text-teal-700 italic mt-1">
+                <p className="text-xs sm:text-sm text-teal-700 italic mt-1">
                   You can enter a new item or select from predefined items
                 </p>
               )}
@@ -308,7 +328,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
               <input
                 type="number"
                 id="quantity"
-                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800"
+                className="w-full p-2 sm:p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-sm sm:text-base"
                 min="1"
                 value={quantity === 0 ? '' : quantity}
                 onChange={(e) => {
@@ -321,10 +341,11 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Unit:
               </label>
-              <div className="flex gap-4">                <label className="inline-flex items-center">
+              <div className="flex gap-4 sm:gap-6">
+                <label className="inline-flex items-center">
                   <input
                     type="radio"
                     name="unit"
@@ -333,7 +354,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
                     onChange={() => setUnit('kg')}
                     className="h-4 w-4 text-green-600"
                   />
-                  <span className="ml-2">kg</span>
+                  <span className="ml-2 text-sm sm:text-base">kg</span>
                 </label>
                 <label className="inline-flex items-center">
                   <input
@@ -344,7 +365,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
                     onChange={() => setUnit('pcs')}
                     className="h-4 w-4 text-green-600"
                   />
-                  <span className="ml-2">pcs</span>
+                  <span className="ml-2 text-sm sm:text-base">pcs</span>
                 </label>
               </div>
             </div>
@@ -356,7 +377,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
               <input
                 type="date"
                 id="harvestDate"
-                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800"
+                className="w-full p-2 sm:p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-sm sm:text-base"
                 value={harvestDate}
                 onChange={(e) => setHarvestDate(e.target.value)}
               />
@@ -368,25 +389,25 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
               </label>
               <textarea
                 id="notes"
-                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 min-h-[80px]"
+                className="w-full p-2 sm:p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 min-h-[60px] sm:min-h-[80px] text-sm sm:text-base"
                 placeholder="Optional notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
             </div>
 
-            <div className="pt-4">
+            <div className="pt-3 sm:pt-4">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-lg transition-colors"
+                className="w-full bg-green-700 hover:bg-green-800 text-white py-2 sm:py-2 px-4 rounded-lg transition-colors text-sm sm:text-base"
               >
                 {isSubmitting ? "Adding..." : "Add Item"}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg transition-colors"
+                className="w-full mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 sm:py-2 px-4 rounded-lg transition-colors text-sm sm:text-base"
               >
                 Cancel
               </button>

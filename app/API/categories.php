@@ -64,6 +64,7 @@ try {    // Fetch Main Categories
             $mainName = $mainNameRow['name'];
 
             $structured[$mainName]["subcategories"][$subName]["predefinedItems"][] = [
+                "id" => (int)$item['id'],
                 "name" => $item['name'],
                 "unit" => $item['unit']
             ];

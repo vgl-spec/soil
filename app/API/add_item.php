@@ -44,6 +44,7 @@ try {
     $quantity = (int)$data['quantity'];
     $harvest_date = !empty($data['harvest_date']) ? $data['harvest_date'] : null;
     $notes = isset($data['notes']) && trim($data['notes']) !== '' ? $data['notes'] : 'Item Added';
+    $user_id = $data['user_id'] ?? null; // Get user_id for action logging
     $created_at = date('Y-m-d H:i:s');
 
     error_log("Processing: predefined_item_id=$predefined_item_id, quantity=$quantity, harvest_date=$harvest_date");
@@ -87,6 +88,41 @@ try {
 
     $conn->commit();
     error_log("Transaction committed successfully");
+
+    // Log the add item action (same format as delete_predefined_item.php)
+    if ($user_id) {
+        error_log("Attempting to log add item for user_id: " . $user_id);
+        
+        // Get predefined item details for better logging
+        $getItemQuery = "SELECT pi.name, pi.unit, c.label as category_label, s.label as subcategory_label 
+                         FROM predefined_items pi 
+                         JOIN categories c ON pi.main_category_id = c.id 
+                         JOIN subcategories s ON pi.subcat_id = s.id 
+                         WHERE pi.id = ?";
+        $getStmt = $conn->prepare($getItemQuery);
+        $getStmt->execute([$predefined_item_id]);
+        $itemDetails = $getStmt->fetch(PDO::FETCH_ASSOC);
+        
+        $description = 'Added item: quantity ' . $quantity;
+        if ($itemDetails) {
+            $description .= ' (' . $itemDetails['name'] . ' - ' . $itemDetails['unit'] . ') from ' . $itemDetails['category_label'] . ' > ' . $itemDetails['subcategory_label'];
+        } else {
+            $description .= ' (predefined_item_id: ' . $predefined_item_id . ')';
+        }
+        
+        $logStmt = $conn->prepare("INSERT INTO action_logs (user_id, action_type, description, timestamp) VALUES (?, ?, ?, CURRENT_TIMESTAMP)");
+        $logResult = $logStmt->execute([
+            $user_id,
+            'add_item',
+            $description
+        ]);
+        error_log("Add item log result: " . ($logResult ? 'SUCCESS' : 'FAILED'));
+        if (!$logResult) {
+            error_log("Log error info: " . json_encode($logStmt->errorInfo()));
+        }
+    } else {
+        error_log("No user_id provided for add item logging");
+    }
 
     echo json_encode([
         'success' => true,

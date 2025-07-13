@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Delete Predefined Item</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        button { padding: 10px 15px; margin: 5px; background: #007cba; color: white; border: none; cursor: pointer; }
+        button.delete { background: #d32f2f; }
+        pre { background: #f5f5f5; padding: 10px; }
+        input { padding: 5px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test Delete Predefined Item</h1>
+    
+    <div class="section">
+        <h2>1. Load Categories (to see predefined items)</h2>
+        <button onclick="loadCategories()">Load Categories</button>
+        <pre id="categoriesData">Click to load categories...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>2. Test Delete Predefined Item</h2>
+        <label>Predefined Item ID: <input type="number" id="itemId" placeholder="Enter item ID from categories above"></label><br>
+        <label>User ID: <input type="number" id="userId" value="1"></label><br>
+        <label><input type="checkbox" id="forceDelete"> Force Delete (delete even if item has references)</label><br>
+        <button class="delete" onclick="testDeleteItem()">Delete Item</button>
+        <pre id="deleteResult">Results will appear here...</pre>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost/soil/app/API';
+        
+        async function loadCategories() {
+            const output = document.getElementById('categoriesData');
+            output.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch(`${API_URL}/categories.php`);
+                const data = await response.json();
+                output.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                output.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function testDeleteItem() {
+            const output = document.getElementById('deleteResult');
+            output.textContent = 'Deleting...';
+            
+            const itemId = document.getElementById('itemId').value;
+            const userId = document.getElementById('userId').value;
+            const forceDelete = document.getElementById('forceDelete').checked;
+            
+            if (!itemId) {
+                output.textContent = 'Please enter a predefined item ID';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/delete_predefined_item.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        predefined_item_id: parseInt(itemId),
+                        user_id: parseInt(userId),
+                        force_delete: forceDelete
+                    })
+                });
+                
+                const responseText = await response.text();
+                output.textContent = `Status: ${response.status}\n\nResponse:\n${responseText}`;
+                
+                // If it's a JSON response, try to parse and display nicely
+                try {
+                    const jsonData = JSON.parse(responseText);
+                    output.textContent += `\n\nParsed JSON:\n${JSON.stringify(jsonData, null, 2)}`;
+                } catch (e) {
+                    // Not JSON, that's fine
+                }
+                
+            } catch (error) {
+                output.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        // Auto-load categories
+        window.onload = loadCategories;
+    </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
+import { showToast, showConfirmation } from '../utils/toastUtils';
 
 interface ManageCategoriesModalProps {
   categories: any;
@@ -13,10 +14,12 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
   onClose,
   onUpdateCategories,
 }) => {
-  const [workingCategories, setWorkingCategories] = useState(categories);
-  const [categoryType, setCategoryType] = useState<string>(
-    Object.keys(categories)[0] || ""
-  );
+  // Initialize state with the categories prop
+  const [workingCategories, setWorkingCategories] = useState(categories || {});
+  const [categoryType, setCategoryType] = useState<string>(() => {
+    const keys = Object.keys(categories || {});
+    return keys.length > 0 ? keys[0] : "";
+  });
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
     null
   );
@@ -24,9 +27,40 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
   const [newItemName, setNewItemName] = useState("");
   const [newItemUnit, setNewItemUnit] = useState("kg");
 
+  // Reset subcategory when category changes
   useEffect(() => {
     setSelectedSubcategory(null);
   }, [categoryType]);
+
+  // Simple update when categories prop changes - no complex validation
+  useEffect(() => {
+    if (categories) {
+      setWorkingCategories(categories);
+    }
+  }, [categories]);
+
+  // Function to refresh categories from server
+  const refreshCategories = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/categories.php`, {
+        withCredentials: true,
+      });
+      const freshCategories = typeof response.data === "string" ? JSON.parse(response.data) : response.data;
+      setWorkingCategories(freshCategories);
+      onUpdateCategories(freshCategories);
+      
+      // Reset selections if current category/subcategory no longer exists
+      if (!freshCategories[categoryType]) {
+        const firstCategory = Object.keys(freshCategories)[0] || "";
+        setCategoryType(firstCategory);
+        setSelectedSubcategory(null);
+      } else if (selectedSubcategory && !freshCategories[categoryType]?.subcategories?.[selectedSubcategory]) {
+        setSelectedSubcategory(null);
+      }
+    } catch (error) {
+      console.error("Error refreshing categories:", error);
+    }
+  };
 
   // Handle adding a new subcategory
   const handleAddSubcategory = async () => {
@@ -38,17 +72,17 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
     );
 
     if (!newSubcategoryName.trim()) {
-      alert("Please enter a subcategory name.");
+      showToast.warning("Missing Information", "Please enter a subcategory name.");
       return;
     }
     if (!workingCategories[categoryType]) {
-      alert("Selected category type does not exist.");
+      showToast.error("Invalid Category", "Selected category type does not exist.");
       return;
     }
     // Generate a key for the new subcategory
     const key = newSubcategoryName.toLowerCase().replace(/[^a-z0-9]/g, "-");
     if (workingCategories[categoryType].subcategories[key]) {
-      alert("A subcategory with this name already exists.");
+      showToast.warning("Duplicate Subcategory", "A subcategory with this name already exists.");
       return;
     }
     console.log(
@@ -95,32 +129,38 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
         };
         setWorkingCategories(updatedCategories);
         setNewSubcategoryName("");
-        alert("Subcategory added!");
+        showToast.success("Subcategory Added!", "Subcategory added successfully!");
         console.log(
           "Subcategory added to local state:",
           updatedCategories[categoryType].subcategories[key]
         );
       } else {
-        alert(response.data.message || "Failed to add subcategory.");
+        showToast.error("Failed to Add Subcategory", response.data.message || "Failed to add subcategory.");
       }
     } catch (error) {
-      alert("Error adding subcategory.");
+      showToast.error("Error", "Error adding subcategory.");
       console.error("Error from add_subcategory.php:", error);
     }
   };
 
   // Handle adding a predefined item
   const handleAddPredefinedItem = async () => {
-    if (!selectedSubcategory || !workingCategories[categoryType]) return;
+    if (!selectedSubcategory || 
+        !workingCategories[categoryType] || 
+        !workingCategories[categoryType].subcategories ||
+        !workingCategories[categoryType].subcategories[selectedSubcategory]) {
+      showToast.warning("Invalid Selection", "Please select a valid subcategory.");
+      return;
+    }
 
     if (!newItemName.trim()) {
-      alert("Please enter an item name.");
+      showToast.warning("Missing Information", "Please enter an item name.");
       return;
     }
 
     const items =
       workingCategories[categoryType].subcategories[selectedSubcategory]
-        .predefinedItems;
+        .predefinedItems || [];
     const existingItem = items.find(
       (item: any) =>
         item.name.toLowerCase() === newItemName.toLowerCase()
@@ -128,17 +168,18 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
 
     if (existingItem) {
       if (existingItem.unit !== newItemUnit) {
-        alert(
+        showToast.warning(
+          "Unit Mismatch",
           `This item already exists with unit "${existingItem.unit}". You cannot add the same item with a different unit.`
         );
         return;
       }
-      alert("This item already exists.");
+      showToast.warning("Duplicate Item", "This item already exists.");
       return;
     }
 
     if (items.length >= 100) {
-      alert("This category has reached the maximum limit of 100 items.");
+      showToast.warning("Limit Reached", "This category has reached the maximum limit of 100 items.");
       return;
     }
 
@@ -149,7 +190,7 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
     const unit = newItemUnit;
 
     if (!main_category_id || !subcat_id) {
-      alert("Invalid category or subcategory selected. Please refresh and try again.");
+      showToast.error("Invalid Selection", "Invalid category or subcategory selected. Please refresh and try again.");
       return;
     }
 
@@ -169,40 +210,122 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
       );
 
       if (response.data.success) {
-        // Add to local state for immediate UI update
+        // Add to local state for immediate UI update, including the ID from server
         const updatedCategories = { ...workingCategories };
-        updatedCategories[categoryType].subcategories[
-          selectedSubcategory
-        ].predefinedItems.push({
+        const newItem = {
+          id: response.data.id,
           name: newItemName,
           unit: newItemUnit,
-        });
+        };
+        
+        updatedCategories[categoryType].subcategories[
+          selectedSubcategory
+        ].predefinedItems.push(newItem);
 
         setWorkingCategories(updatedCategories);
         setNewItemName("");
-        alert("Predefined item added!");
+        showToast.success("Item Added!", "Predefined item added successfully!");
       } else {
-        alert(response.data.message || "Failed to add predefined item.");
+        showToast.error("Failed to Add Item", response.data.message || "Failed to add predefined item.");
       }
     } catch (error: any) {
       let errorMessage = "Error adding predefined item.";
       if (error.response?.data?.message) {
         errorMessage += " " + error.response.data.message;
       }
-      alert(errorMessage);
+      showToast.error("Error", errorMessage);
     }
   };
 
   // Handle deleting a predefined item
-  const handleDeletePredefinedItem = (index: number) => {
-    if (!selectedSubcategory || !workingCategories[categoryType]) return;
+  const handleDeletePredefinedItem = async (index: number) => {
+    if (!selectedSubcategory || 
+        !workingCategories[categoryType] ||
+        !workingCategories[categoryType].subcategories ||
+        !workingCategories[categoryType].subcategories[selectedSubcategory] ||
+        !workingCategories[categoryType].subcategories[selectedSubcategory].predefinedItems) {
+      showToast.error("Delete Error", "Cannot delete item: Invalid category state.");
+      return;
+    }
 
-    const updatedCategories = { ...workingCategories };
-    updatedCategories[categoryType].subcategories[
-      selectedSubcategory
-    ].predefinedItems.splice(index, 1);
+    const item = workingCategories[categoryType].subcategories[selectedSubcategory].predefinedItems[index];
+    
+    if (!item || !item.id) {
+      showToast.error("Delete Error", "Cannot delete item: Item ID not found.");
+      return;
+    }
 
-    setWorkingCategories(updatedCategories);
+    // Get current user for logging
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = user.id;
+
+    console.log("Current user for deletion:", user);
+    console.log("User ID for deletion:", userId);
+
+    const confirmResult = await showConfirmation.delete(item.name);
+    if (!confirmResult.isConfirmed) return;
+
+    try {
+      // First try without force delete
+      let response = await axios.post(
+        `${API_BASE_URL}/delete_predefined_item.php`,
+        { 
+          predefined_item_id: item.id,
+          user_id: userId // Add user_id for action logging
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+
+      // If deletion failed due to references, ask for force delete confirmation
+      if (!response.data.success && response.data.message && response.data.message.includes("being used in the system")) {
+        const forceConfirmResult = await showConfirmation.action(
+          "Force Delete Required",
+          `${response.data.message}<br><br>Do you want to force delete this item? This will remove all references and cannot be undone.`,
+          "Force Delete"
+        );
+        
+        if (forceConfirmResult.isConfirmed) {
+          // Try again with force delete
+          response = await axios.post(
+            `${API_BASE_URL}/delete_predefined_item.php`,
+            { 
+              predefined_item_id: item.id,
+              user_id: userId, // Add user_id for action logging
+              force_delete: true
+            },
+            {
+              headers: { "Content-Type": "application/json" },
+              withCredentials: true,
+            }
+          );
+        } else {
+          return; // User cancelled force delete
+        }
+      }
+
+      if (response.data.success) {
+        // Remove from local state for immediate UI update
+        const updatedCategories = { ...workingCategories };
+        updatedCategories[categoryType].subcategories[
+          selectedSubcategory
+        ].predefinedItems.splice(index, 1);
+        setWorkingCategories(updatedCategories);
+        
+        showToast.success("Item Deleted!", "Item deleted successfully!");
+        
+        // Refresh categories from server to ensure consistency
+        // This will reflect any changes to inventory items that were affected
+        await refreshCategories();
+      } else {
+        showToast.error("Delete Failed", `Failed to delete item: ${response.data.message || "Unknown error"}`);
+      }
+    } catch (error: any) {
+      console.error("Error deleting predefined item:", error);
+      showToast.error("Delete Error", `Error deleting item: ${error.response?.data?.message || error.message}`);
+    }
   };
 
   // Handle saving changes
@@ -215,20 +338,34 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
         <h2 className="text-xl font-semibold mb-6 pr-8">Manage Categories</h2>
-        <div className="mb-4">
-          <label className="block mb-1 font-medium">Main Category</label>
-          <select
-            className="border rounded px-2 py-1 w-full"
-            value={categoryType}
-            onChange={(e) => setCategoryType(e.target.value)}
-          >
-            {Object.keys(workingCategories).map((cat) => (
-              <option key={cat} value={cat}>
-                {workingCategories[cat].label}
-              </option>
-            ))}
-          </select>
-        </div>
+        
+        {/* Show loading message if no categories are available */}
+        {(!workingCategories || Object.keys(workingCategories).length === 0) ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500 mb-4">No categories loaded yet. Please wait...</p>
+            <button
+              onClick={onClose}
+              className="bg-gray-300 text-gray-800 px-3 py-2 rounded hover:bg-gray-400"
+            >
+              Close
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">Main Category</label>
+              <select
+                className="border rounded px-2 py-1 w-full"
+                value={categoryType}
+                onChange={(e) => setCategoryType(e.target.value)}
+              >
+                {Object.keys(workingCategories).map((cat) => (
+                  <option key={cat} value={cat}>
+                    {workingCategories[cat]?.label || cat}
+                  </option>
+                ))}
+              </select>
+            </div>
         <div className="mb-4">
           <label className="block mb-1 font-medium">Subcategories</label>
           <select
@@ -237,12 +374,16 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
             onChange={(e) => setSelectedSubcategory(e.target.value)}
           >
             <option value="">-- Select Subcategory --</option>
-            {Object.keys(workingCategories[categoryType].subcategories).map(
-              (sub) => (
-                <option key={sub} value={sub}>
-                  {workingCategories[categoryType].subcategories[sub].label}
-                </option>
+            {workingCategories[categoryType] && workingCategories[categoryType].subcategories ? (
+              Object.keys(workingCategories[categoryType].subcategories).map(
+                (sub) => (
+                  <option key={sub} value={sub}>
+                    {workingCategories[categoryType].subcategories[sub].label}
+                  </option>
+                )
               )
+            ) : (
+              <option disabled>No subcategories available</option>
             )}
           </select>
         </div>
@@ -286,13 +427,16 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
             Add Predefined Item
           </button>
         </div>
-        {selectedSubcategory && (
+        {selectedSubcategory && 
+         workingCategories[categoryType] && 
+         workingCategories[categoryType].subcategories && 
+         workingCategories[categoryType].subcategories[selectedSubcategory] && (
           <div className="mb-4">
             <label className="block mb-1 font-medium">
               Predefined Items in {workingCategories[categoryType].subcategories[selectedSubcategory].label}
             </label>
             <ul>
-              {workingCategories[categoryType].subcategories[selectedSubcategory].predefinedItems.map(
+              {workingCategories[categoryType].subcategories[selectedSubcategory].predefinedItems?.map(
                 (item: any, idx: number) => (
                   <li key={idx} className="flex items-center justify-between border-b py-1">
                     <span>
@@ -306,24 +450,26 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
                     </button>
                   </li>
                 )
-              )}
+              ) || <li className="text-gray-500 italic">No predefined items</li>}
             </ul>
           </div>
         )}
-        <div className="flex gap-2 mt-6">
-          <button
-            onClick={handleSave}
-            className="bg-gray-700 text-white px-3 py-2 rounded hover:bg-gray-800"
-          >
-            Save Changes
-          </button>
-          <button
-            onClick={onClose}
-            className="bg-gray-300 text-gray-800 px-3 py-2 rounded hover:bg-gray-400"
-          >
-            Close
-          </button>
-        </div>
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={handleSave}
+                className="bg-gray-700 text-white px-3 py-2 rounded hover:bg-gray-800"
+              >
+                Save Changes
+              </button>
+              <button
+                onClick={onClose}
+                className="bg-gray-300 text-gray-800 px-3 py-2 rounded hover:bg-gray-400"
+              >
+                Close
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

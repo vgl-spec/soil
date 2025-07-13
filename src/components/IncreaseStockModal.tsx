@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { ConsolidatedItem, HistoryEntry } from '../types';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
+import { showToast } from '../utils/toastUtils';
 
 interface IncreaseStockModalProps {
   item: ConsolidatedItem;
@@ -22,12 +24,12 @@ const IncreaseStockModal: React.FC<IncreaseStockModalProps> = ({ item, onClose, 
     e.preventDefault();
 
     if (isNaN(quantity) || quantity <= 0) {
-      alert("Please enter a valid quantity.");
+      showToast.warning("Invalid Quantity", "Please enter a valid quantity.");
       return;
     }
 
     if (!harvestDate) {
-      alert("Please enter a valid harvest date.");
+      showToast.warning("Missing Date", "Please enter a valid harvest date.");
       return;
     }
 
@@ -36,7 +38,7 @@ const IncreaseStockModal: React.FC<IncreaseStockModalProps> = ({ item, onClose, 
     const userId = user.id;
 
     if (!userId) {
-      alert("User not authenticated. Please log in again.");
+      showToast.error("Authentication Error", "User not authenticated. Please log in again.");
       return;
     }
 
@@ -71,7 +73,7 @@ const IncreaseStockModal: React.FC<IncreaseStockModalProps> = ({ item, onClose, 
     console.log("Payload being sent:", payload);
 
     // API call to increase stock and update the database
-    axios.post('https://soil-3tik.onrender.com/API/increase_stock.php', payload)
+    axios.post(`${API_BASE_URL}/increase_stock.php`, payload)
       .then(() => {
         onIncreaseStock(historyEntry);
         onClose();
@@ -80,24 +82,24 @@ const IncreaseStockModal: React.FC<IncreaseStockModalProps> = ({ item, onClose, 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-2 sm:p-4 z-50">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-4 sm:p-6 relative max-h-[95vh] overflow-y-auto">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          className="absolute top-3 sm:top-4 right-3 sm:right-4 text-gray-500 hover:text-gray-700"
         >
-          <X className="h-6 w-6" />
+          <X className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
         
-        <h2 className="text-xl font-semibold mb-6 pr-8">Increase Stock</h2>
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 pr-8">Increase Stock</h2>
         
         <div className="mb-4">
-          <p className="font-medium text-lg">{item.name}</p>
-          <p className="text-gray-600">Current Stock: {item.quantity} {item.unit}</p>
+          <p className="font-medium text-base sm:text-lg">{item.name}</p>
+          <p className="text-gray-600 text-sm sm:text-base">Current Stock: {item.quantity} {item.unit}</p>
         </div>
         
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
               <label htmlFor="increaseQuantity" className="block text-sm font-medium text-gray-700 mb-1">
                 Quantity to Increase:
@@ -105,7 +107,7 @@ const IncreaseStockModal: React.FC<IncreaseStockModalProps> = ({ item, onClose, 
               <input
                 type="number"
                 id="increaseQuantity"
-                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800"
+                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-sm sm:text-base"
                 min="1"
                 value={quantity === 0 ? '' : quantity}
                 onChange={(e) => {
@@ -123,7 +125,7 @@ const IncreaseStockModal: React.FC<IncreaseStockModalProps> = ({ item, onClose, 
               <input
                 type="date"
                 id="harvestDate"
-                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800"
+                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-sm sm:text-base"
                 value={harvestDate}
                 onChange={(e) => setHarvestDate(e.target.value)}
               />
@@ -135,24 +137,24 @@ const IncreaseStockModal: React.FC<IncreaseStockModalProps> = ({ item, onClose, 
               </label>
               <textarea
                 id="increaseReason"
-                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 min-h-[100px]"
+                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
                 placeholder="Why are you increasing the stock? (e.g., restocked, returned, etc.)"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
             </div>
             
-            <div className="pt-4 flex gap-3">
+            <div className="pt-3 sm:pt-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
               <button
                 type="submit"
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors"
+                className="w-full sm:flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors text-sm sm:text-base"
               >
                 Increase Stock
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg transition-colors"
+                className="w-full sm:flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg transition-colors text-sm sm:text-base"
               >
                 Cancel
               </button>

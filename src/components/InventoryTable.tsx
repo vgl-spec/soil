@@ -73,25 +73,129 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
+      {/* Mobile Card View for small screens */}
+      <div className="block sm:hidden">
+        {itemsArray.length === 0 ? (
+          <div className="p-4 text-center text-gray-500 border border-gray-200 rounded">
+            No items found
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {viewMode === 'consolidated' ? (
+              // Mobile Consolidated Cards
+              (itemsArray as ConsolidatedItem[]).map((item) => (
+                <div
+                  key={`consolidated-${item.id}-${item.predefined_item_id}`}
+                  className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-semibold text-lg text-gray-900">{item.name}</h3>
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
+                      {item.quantity} {item.unit}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Category:</span>
+                      <span className="text-gray-900">{getCategoryLabel(categories, item.mainCategory, item.subcategory)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Procured Date:</span>
+                      <span className="text-gray-900">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => onIncreaseStock(item)}
+                        className="flex-1 bg-green-700 text-white px-3 py-2 rounded text-sm hover:bg-green-800 transition-colors"
+                      >
+                        Add Stock
+                      </button>
+                      <button
+                        onClick={() => onReduceStock(item)}
+                        className="flex-1 bg-amber-600 text-white px-3 py-2 rounded text-sm hover:bg-amber-700 transition-colors"
+                      >
+                        Reduce Stock
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => onViewHistory(item)}
+                      className="w-full bg-teal-700 text-white px-3 py-2 rounded text-sm hover:bg-teal-800 transition-colors flex items-center justify-center gap-1"
+                    >
+                      <History className="h-4 w-4" />
+                      View History
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              // Mobile History Cards
+              (itemsArray as HistoryEntry[]).map((entry, index) => (
+                <div
+                  key={`history-${entry.id}-${entry.date}-${index}`}
+                  className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-semibold text-lg text-gray-900">{entry.name}</h3>
+                    <span className={`px-2 py-1 rounded text-sm font-medium ${
+                      entry.quantity > 0 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {entry.quantity > 0 ? '+' : ''}{entry.quantity} {entry.unit}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Date:</span>
+                      <span className="text-gray-900">{safeFormatDate(entry.date)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Category:</span>
+                      <span className="text-gray-900">{getCategoryLabel(categories, entry.mainCategory, entry.subcategory)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Procured Date:</span>
+                      <span className="text-gray-900">{formatDate(entry.harvestDate)}</span>
+                    </div>
+                    {entry.notes && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Notes:</span>
+                        <span className="text-gray-900">{entry.notes}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View for larger screens */}
+      <table className="w-full border-collapse hidden sm:table">
         <thead className="bg-green-700 text-white">
           <tr>
             {viewMode === 'consolidated' ? (
               <>
-                <th className="p-3 text-left">Item Name</th>
-                <th className="p-3 text-left">Category</th>
-                <th className="p-3 text-left">Current Stock</th>
-                <th className="p-3 text-left">Recent Procured Date</th>
-                <th className="p-3 text-left">Actions</th>
+                <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Item Name</th>
+                <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Category</th>
+                <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Current Stock</th>
+                <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Recent Procured Date</th>
+                <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Actions</th>
               </>
             ) : (
               <>
-                <th className="p-3 text-left">Date</th>
-                <th className="p-3 text-left">Item Name</th>
-                <th className="p-3 text-left">Category</th>
-                <th className="p-3 text-left">Quantity Change</th>
-                <th className="p-3 text-left">Procured Date</th>
-                <th className="p-3 text-left">Notes</th>
+                <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Date</th>
+                <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Item Name</th>
+                <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Category</th>
+                <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Quantity Change</th>
+                <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Procured Date</th>
+                <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Notes</th>
               </>
             )}
           </tr>
@@ -108,56 +212,56 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
             </tr>
           ) : (
             viewMode === 'consolidated' ? (
-              // Consolidated view
+              // Desktop Consolidated view
               (itemsArray as ConsolidatedItem[]).map((item) => (
                 <tr
                   key={`consolidated-${item.id}-${item.predefined_item_id}`}
                   className="border-b border-gray-200 hover:bg-gray-50"
                 >
-                  <td className="p-3">{item.name}</td>
-                  <td className="p-3">{getCategoryLabel(categories, item.mainCategory, item.subcategory)}</td>
-                  <td className="p-3">
+                  <td className="p-2 sm:p-3 text-xs sm:text-sm">{item.name}</td>
+                  <td className="p-2 sm:p-3 text-xs sm:text-sm">{getCategoryLabel(categories, item.mainCategory, item.subcategory)}</td>
+                  <td className="p-2 sm:p-3 text-xs sm:text-sm">
                     <span className="font-medium">{item.quantity} {item.unit}</span>
                   </td>
-                  <td className="p-3">
+                  <td className="p-2 sm:p-3 text-xs sm:text-sm">
                     {item.harvestDate ? formatDate(item.harvestDate) : "-"}
                   </td>
-                  <td className="p-3">
-                    <div className="flex gap-2">
+                  <td className="p-2 sm:p-3">
+                    <div className="flex flex-col lg:flex-row gap-1 lg:gap-2">
                       <button
                         onClick={() => onIncreaseStock(item)}
-                        className="bg-green-700 text-white px-3 py-1 rounded text-sm hover:bg-green-800 transition-colors"
+                        className="bg-green-700 text-white px-2 lg:px-3 py-1 rounded text-xs lg:text-sm hover:bg-green-800 transition-colors whitespace-nowrap"
                       >
                         Add
                       </button>
                       <button
                         onClick={() => onReduceStock(item)}
-                        className="bg-amber-600 text-white px-3 py-1 rounded text-sm hover:bg-amber-700 transition-colors"
+                        className="bg-amber-600 text-white px-2 lg:px-3 py-1 rounded text-xs lg:text-sm hover:bg-amber-700 transition-colors whitespace-nowrap"
                       >
                         Reduce
                       </button>
                       <button
                         onClick={() => onViewHistory(item)}
-                        className="bg-teal-700 text-white px-3 py-1 rounded text-sm hover:bg-teal-800 transition-colors flex items-center gap-1"
+                        className="bg-teal-700 text-white px-2 lg:px-3 py-1 rounded text-xs lg:text-sm hover:bg-teal-800 transition-colors flex items-center justify-center gap-1 whitespace-nowrap"
                       >
                         <History className="h-3 w-3" />
-                        History
+                        <span className="hidden lg:inline">History</span>
                       </button>
                     </div>
                   </td>
                 </tr>
               ))
             ) : (
-              // History view
+              // Desktop History view
               (itemsArray as HistoryEntry[]).map((entry, index) => (
                 <tr
                   key={`history-${entry.id}-${entry.date}-${index}`}
                   className="border-b border-gray-200 hover:bg-gray-50"
                 >
-                  <td className="p-3">{safeFormatDate(entry.date)}</td>
-                  <td className="p-3">{entry.name}</td>
-                  <td className="p-3">{getCategoryLabel(categories, entry.mainCategory, entry.subcategory)}</td>
-                  <td className="p-3">
+                  <td className="p-2 sm:p-3 text-xs sm:text-sm">{safeFormatDate(entry.date)}</td>
+                  <td className="p-2 sm:p-3 text-xs sm:text-sm">{entry.name}</td>
+                  <td className="p-2 sm:p-3 text-xs sm:text-sm">{getCategoryLabel(categories, entry.mainCategory, entry.subcategory)}</td>
+                  <td className="p-2 sm:p-3 text-xs sm:text-sm">
                     {entry.quantity > 0 ? (
                       <span className="text-green-700 font-medium">
                         +{entry.quantity} {entry.unit}
@@ -168,8 +272,8 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
                       </span>
                     )}
                   </td>
-                  <td className="p-3">{formatDate(entry.harvestDate)}</td>
-                  <td className="p-3">{entry.notes || "-"}</td>
+                  <td className="p-2 sm:p-3 text-xs sm:text-sm">{formatDate(entry.harvestDate)}</td>
+                  <td className="p-2 sm:p-3 text-xs sm:text-sm">{entry.notes || "-"}</td>
                 </tr>
               ))
             )

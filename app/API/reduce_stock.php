@@ -61,9 +61,26 @@ $insertHistoryQuery = "INSERT INTO item_history (predefined_item_id, quantity, h
 $stmt = $conn->prepare($insertHistoryQuery);
 $stmt->execute([$predefinedItemId, $quantity, null, $notes, $created_at]);
 
+// Get predefined item details for better logging
+$getItemQuery = "SELECT pi.name, pi.unit, c.label as category_label, s.label as subcategory_label 
+                 FROM predefined_items pi 
+                 JOIN categories c ON pi.main_category_id = c.id 
+                 JOIN subcategories s ON pi.subcat_id = s.id 
+                 WHERE pi.id = ?";
+$getStmt = $conn->prepare($getItemQuery);
+$getStmt->execute([$predefinedItemId]);
+$itemDetails = $getStmt->fetch(PDO::FETCH_ASSOC);
+
+// Create description with item name
+$logDescription = "Reduced stock: quantity $quantity";
+if ($itemDetails) {
+    $logDescription .= " (" . $itemDetails['name'] . " - " . $itemDetails['unit'] . ") from " . $itemDetails['category_label'] . " > " . $itemDetails['subcategory_label'];
+} else {
+    $logDescription .= " (item ID: $itemId)";
+}
+
 // Insert into action_logs table
 $insertLogQuery = "INSERT INTO action_logs (user_id, action_type, description, timestamp) VALUES (?, 'reduce_stock', ?, CURRENT_TIMESTAMP)";
-$logDescription = "Reduced stock for item ID: $itemId by $quantity units.";
 $stmt = $conn->prepare($insertLogQuery);
 $stmt->execute([$userId, $logDescription]);
 

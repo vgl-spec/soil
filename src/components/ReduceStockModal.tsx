@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { ConsolidatedItem, HistoryEntry } from '../types';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
+import { showToast } from '../utils/toastUtils';
 
 interface ReduceStockModalProps {
   item: ConsolidatedItem;
@@ -23,12 +25,12 @@ const ReduceStockModal: React.FC<ReduceStockModalProps> = ({ item, onClose, onRe
     e.preventDefault();
 
     if (isNaN(quantity) || quantity <= 0) {
-      alert("Please enter a valid quantity.");
+      showToast.warning("Invalid Quantity", "Please enter a valid quantity.");
       return;
     }
 
     if (quantity > item.quantity) {
-      alert("Cannot reduce more than the current stock.");
+      showToast.warning("Quantity Too High", "Cannot reduce more than the current stock.");
       return;
     }
 
@@ -37,7 +39,7 @@ const ReduceStockModal: React.FC<ReduceStockModalProps> = ({ item, onClose, onRe
     const userId = user.id;
 
     if (!userId) {
-      alert("User not authenticated. Please log in again.");
+      showToast.error("Authentication Error", "User not authenticated. Please log in again.");
       return;
     }
 
@@ -70,7 +72,7 @@ const ReduceStockModal: React.FC<ReduceStockModalProps> = ({ item, onClose, onRe
     console.log("Payload being sent:", payload);
 
     // API call to reduce stock and update the database
-    axios.post('https://soil-3tik.onrender.com/API/reduce_stock.php', payload, {
+    axios.post(`${API_BASE_URL}/reduce_stock.php`, payload, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -83,12 +85,12 @@ const ReduceStockModal: React.FC<ReduceStockModalProps> = ({ item, onClose, onRe
           onClose();
         } else {
           console.error("Failed to reduce stock:", response.data.message || "Unknown error");
-          alert(response.data.message || "Failed to reduce stock. Please try again.");
+          showToast.error("Failed to Reduce Stock", response.data.message || "Failed to reduce stock. Please try again.");
         }
       })
       .catch((err) => {
         console.error("Error reducing stock:", err);
-        alert("An error occurred while reducing stock. Please try again.");
+        showToast.error("Error", "An error occurred while reducing stock. Please try again.");
       });
   };
 
@@ -103,24 +105,24 @@ const ReduceStockModal: React.FC<ReduceStockModalProps> = ({ item, onClose, onRe
 
   // Return the JSX structure
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-2 sm:p-4 z-50">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-4 sm:p-6 relative max-h-[95vh] overflow-y-auto">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          className="absolute top-3 sm:top-4 right-3 sm:right-4 text-gray-500 hover:text-gray-700"
         >
-          <X className="h-6 w-6" />
+          <X className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
         
-        <h2 className="text-xl font-semibold mb-6 pr-8">Reduce Stock</h2>
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 pr-8">Reduce Stock</h2>
         
         <div className="mb-4">
-          <p className="font-medium text-lg">{item.name}</p>
-          <p className="text-gray-600">Current Stock: {item.quantity} {item.unit}</p>
+          <p className="font-medium text-base sm:text-lg">{item.name}</p>
+          <p className="text-gray-600 text-sm sm:text-base">Current Stock: {item.quantity} {item.unit}</p>
         </div>
         
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
               <label htmlFor="reduceQuantity" className="block text-sm font-medium text-gray-700 mb-1">
                 Quantity to Reduce:
@@ -128,7 +130,7 @@ const ReduceStockModal: React.FC<ReduceStockModalProps> = ({ item, onClose, onRe
               <input
                 type="number"
                 id="reduceQuantity"
-                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800"
+                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-sm sm:text-base"
                 min="1"
                 max={item.quantity}
                 value={quantity === 0 ? '' : quantity}
@@ -147,24 +149,24 @@ const ReduceStockModal: React.FC<ReduceStockModalProps> = ({ item, onClose, onRe
               </label>
               <textarea
                 id="reduceReason"
-                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 min-h-[100px]"
+                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
                 placeholder="Why are you reducing the stock? (e.g., sold, damaged, etc.)"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
             </div>
             
-            <div className="pt-4 flex gap-3">
+            <div className="pt-3 sm:pt-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
               <button
                 type="submit"
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
+                className="w-full sm:flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors text-sm sm:text-base"
               >
                 Reduce Stock
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg transition-colors"
+                className="w-full sm:flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg transition-colors text-sm sm:text-base"
               >
                 Cancel
               </button>

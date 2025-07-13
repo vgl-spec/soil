@@ -93,8 +93,8 @@ const UserView: React.FC = () => {
     }  };
 
   return (
-    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center overflow-auto p-4">
-      <div className="w-full max-w-screen-lg bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-full max-h-[95vh] overflow-hidden">
+    <div className="min-h-screen w-full bg-black bg-opacity-40 flex items-center justify-center p-2 sm:p-4">
+      <div className="w-full max-w-screen-xl bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col h-[98vh] sm:h-[95vh]">
         <div
           className="absolute inset-0 rounded-lg"
           style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
@@ -102,19 +102,56 @@ const UserView: React.FC = () => {
         />
         <div className="relative z-10 flex flex-col h-full">
           <Header />
-          <main className="flex-1 p-6 flex flex-col overflow-hidden">
-            <div className="overflow-x-auto mt-8 flex-1 flex flex-col">
+          <main className="flex-1 p-3 sm:p-6 flex flex-col min-h-0">
+            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-6">Inventory Overview</h2>
+            
+            {/* Mobile Card View */}
+            <div className="block sm:hidden flex-1 overflow-y-auto space-y-3 min-h-0">
+              {items.length === 0 ? (
+                <div className="p-4 text-center text-gray-500 border border-gray-200 rounded">
+                  No items found
+                </div>
+              ) : (
+                items.map((item) => (
+                  <div
+                    key={`item-${item.id}-${item.predefined_item_id}`}
+                    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="font-semibold text-lg text-gray-900">{item.name}</h3>
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
+                        {item.quantity} {item.unit}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Category:</span>
+                        <span className="text-gray-900">{getCategoryLabel(categories, item.mainCategory, item.subcategory)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Procured Date:</span>
+                        <span className="text-gray-900">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden sm:block flex-1 flex flex-col min-h-0">
               <table className="w-full border-collapse flex-shrink-0 table-fixed">
                 <thead className="bg-green-700 text-white">
                   <tr>
-                    <th className="p-3 text-left w-1/4">Item Name</th>
-                    <th className="p-3 text-left w-1/4">Category</th>
-                    <th className="p-3 text-left w-1/4">Current Stock</th>
-                    <th className="p-3 text-left w-1/4">Recent Procured Date</th>
+                    <th className="p-2 sm:p-3 text-left w-1/4 text-sm sm:text-base">Item Name</th>
+                    <th className="p-2 sm:p-3 text-left w-1/4 text-sm sm:text-base">Category</th>
+                    <th className="p-2 sm:p-3 text-left w-1/4 text-sm sm:text-base">Current Stock</th>
+                    <th className="p-2 sm:p-3 text-left w-1/4 text-sm sm:text-base">Recent Procured Date</th>
                   </tr>
                 </thead>
               </table>
-              <div className="overflow-y-auto max-h-[60vh] flex-1">
+              <div className="overflow-y-auto flex-1 bg-white rounded border border-gray-300 min-h-0">
                 <table className="w-full border-collapse table-fixed">
                   <tbody>
                     {items.length === 0 ? (
@@ -126,10 +163,10 @@ const UserView: React.FC = () => {
                     ) : (
                       items.map((item) => (
                         <tr key={`item-${item.id}-${item.predefined_item_id}`} className="border-b border-gray-200 hover:bg-gray-50">
-                          <td className="p-3 w-1/4">{item.name}</td>
-                          <td className="p-3 w-1/4">{getCategoryLabel(categories, item.mainCategory, item.subcategory)}</td>
-                          <td className="p-3 font-medium w-1/4">{item.quantity} {item.unit}</td>
-                          <td className="p-3 w-1/4">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</td>
+                          <td className="p-2 sm:p-3 w-1/4 text-sm sm:text-base">{item.name}</td>
+                          <td className="p-2 sm:p-3 w-1/4 text-sm sm:text-base">{getCategoryLabel(categories, item.mainCategory, item.subcategory)}</td>
+                          <td className="p-2 sm:p-3 font-medium w-1/4 text-sm sm:text-base">{item.quantity} {item.unit}</td>
+                          <td className="p-2 sm:p-3 w-1/4 text-sm sm:text-base">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</td>
                         </tr>
                       ))
                     )}
