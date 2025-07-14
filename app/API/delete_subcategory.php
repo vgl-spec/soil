@@ -121,10 +121,10 @@ try {
         "Deleted subcategory '{$subcategory_name}'";
 
     $stmt = $pdo->prepare("
-        INSERT INTO action_logs (user_id, action_type, item_name, details, timestamp) 
-        VALUES (?, 'delete_subcategory', ?, ?, NOW())
+        INSERT INTO action_logs (user_id, action_type, description, timestamp) 
+        VALUES (?, 'delete_subcategory', ?, NOW())
     ");
-    $stmt->execute([$user_id, $subcategory_name, $action_description]);
+    $stmt->execute([$user_id, $action_description]);
 
     // Commit transaction
     $pdo->commit();
@@ -144,9 +144,7 @@ try {
     error_log("Error deleting subcategory: " . $e->getMessage());
     echo json_encode([
         'success' => false, 
-        'message' => 'Database error occurred while deleting subcategory',
-        'error_details' => $e->getMessage(),
-        'line' => $e->getLine()
+        'message' => 'Database error occurred while deleting subcategory'
     ]);
 }
 ?>
