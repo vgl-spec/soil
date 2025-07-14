@@ -338,29 +338,31 @@ const OperatorDashboard: React.FC = () => {
 
             {/* Compact header with action buttons */}
             <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
-              <h2 className="text-lg sm:text-xl font-bold text-[#8a9b6e]">Operator Dashboard</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-[#8a9b6e] truncate">Operator Dashboard</h2>
               
-              {/* Compact action buttons */}
-              <div className="flex flex-wrap gap-1 sm:gap-2">
+              {/* Compact action buttons - always inline */}
+              <div className="flex gap-1 flex-shrink-0">
                 <button
-                  className="bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-all duration-200 whitespace-nowrap shadow-md hover:shadow-lg"
+                  className="bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-1.5 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-all duration-200 whitespace-nowrap shadow-md hover:shadow-lg min-w-0"
                   onClick={() => {
                     setShowAddModal(true);
                     showToast.info("Add Item", "Opening add item form...");
                   }}
                 >
-                  + Add
+                  <span className="hidden sm:inline">+ Add</span>
+                  <span className="sm:hidden">+</span>
                 </button>
                 <button
-                  className="bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-all duration-200 whitespace-nowrap shadow-md hover:shadow-lg"
+                  className="bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-1.5 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-all duration-200 whitespace-nowrap shadow-md hover:shadow-lg min-w-0"
                   onClick={() => {
                     setShowCategoryModal(true);
                   }}
                 >
-                  Categories
+                  <span className="hidden sm:inline">Categories</span>
+                  <span className="sm:hidden">Cat</span>
                 </button>
                 <button
-                  className="bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-all duration-200 whitespace-nowrap shadow-md hover:shadow-lg"
+                  className="bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-1.5 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-all duration-200 whitespace-nowrap shadow-md hover:shadow-lg min-w-0"
                   onClick={() => {
                     setShowReportView(!showReportView);
                     showToast.info(
@@ -369,7 +371,8 @@ const OperatorDashboard: React.FC = () => {
                     );
                   }}
                 >
-                  {showReportView ? "Back" : "Report"}
+                  <span className="hidden sm:inline">{showReportView ? "Back" : "Report"}</span>
+                  <span className="sm:hidden">{showReportView ? "←" : "Rep"}</span>
                 </button>
               </div>
             </div>
