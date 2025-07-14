@@ -91,7 +91,15 @@ try {
             $log = $conn->prepare("INSERT INTO action_logs (user_id, action_type, description) VALUES (?, ?, ?)");
             $log->execute([$user['id'], 'login', 'User logged in']);
 
-            echo json_encode(["success" => true, "role" => $user['role'], "id" => $user['id']]);
+            echo json_encode([
+                "success" => true, 
+                "role" => $user['role'], 
+                "id" => $user['id'],
+                "username" => $user['username'],
+                "email" => $user['email'] ?? '',
+                "contact" => $user['contact'] ?? '',
+                "subdivision" => $user['subdivision'] ?? ''
+            ]);
         } else {
             echo json_encode(["success" => false, "message" => "Invalid password"]);
         }

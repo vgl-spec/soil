@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { login } from "../useAuth";
 import { useNavigate, Link } from "react-router-dom";
+import { showToast } from "../utils/toastUtils";
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -15,6 +16,7 @@ const handleLogin = async (e: React.FormEvent) => {
   console.log("Login result:", result); // Debug log
   if (result.success) {
     localStorage.setItem("user", JSON.stringify(result));
+    showToast.success("Login Successful", `Welcome back, ${result.username}!`);
     if (result.role === "supervisor") navigate("/supervisor");
     else if (result.role === "operator") navigate("/operator");
     else navigate("/user");
@@ -52,11 +54,11 @@ const handleLogin = async (e: React.FormEvent) => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2 border rounded text-sm sm:text-base"
             />
-            <button type="submit" className="w-full bg-green-700 hover:bg-green-800 text-white p-2 rounded transition-colors text-sm sm:text-base">
+            <button type="submit" className="w-full bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white p-2 rounded transition-all duration-200 text-sm sm:text-base shadow-md hover:shadow-lg">
               Login
             </button>
             <p className="text-xs sm:text-sm text-center">
-              No account? <Link to="/register" className="text-green-700 underline hover:text-green-800">Register here</Link>
+              No account? <Link to="/register" className="text-[#8a9b6e] underline hover:text-[#7a8b5e] transition-colors duration-200">Register here</Link>
             </p>
           </form>
         </div>

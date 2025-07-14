@@ -21,7 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $inputData['email'];
     $password = password_hash($inputData['password'], PASSWORD_DEFAULT); // Encrypt the password
     $contact = $inputData['contact'];
-    $subdivision = $inputData['subdivision'];    // Check if the username or email already exists
+    $subdivision = $inputData['subdivision'];
+    $role = isset($inputData['role']) ? $inputData['role'] : 'user'; // Default to 'user' if not specified    // Check if the username or email already exists
     $checkUserQuery = "SELECT * FROM users WHERE username = ? OR email = ?";
     $stmt = $conn->prepare($checkUserQuery);
     $stmt->execute([$username, $email]);
@@ -32,10 +33,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-    // Insert new user into the database
-    $insertQuery = "INSERT INTO users (username, email, password, contact, subdivision, role) VALUES (?, ?, ?, ?, ?, 'user')";
-    $stmt = $conn->prepare($insertQuery);    if ($stmt->execute([$username, $email, $password, $contact, $subdivision])) {
-        echo json_encode(['success' => true, 'message' => 'Registration successful.']);
+    // Insert new user into the database (let ID auto-increment)
+    $insertQuery = "INSERT INTO users (username, email, password, contact, subdivision, role) VALUES (?, ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($insertQuery);
+    
+    if ($stmt->execute([$username, $email, $password, $contact, $subdivision, $role])) {
+        // Get the newly created user ID
+        $userId = $conn->lastInsertId();
+        echo json_encode([
+            'success' => true, 
+            'message' => 'Registration successful.',
+            'user_id' => $userId
+        ]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Registration failed. Please try again.']);
     }

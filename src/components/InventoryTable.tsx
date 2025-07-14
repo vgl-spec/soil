@@ -72,9 +72,9 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
   // }, [itemsArray, viewMode]);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="h-full flex flex-col">
       {/* Mobile Card View for small screens */}
-      <div className="block sm:hidden">
+      <div className="block sm:hidden overflow-y-auto flex-1">
         {itemsArray.length === 0 ? (
           <div className="p-4 text-center text-gray-500 border border-gray-200 rounded">
             No items found
@@ -110,13 +110,13 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
                     <div className="flex gap-2">
                       <button
                         onClick={() => onIncreaseStock(item)}
-                        className="flex-1 bg-green-700 text-white px-3 py-2 rounded text-sm hover:bg-green-800 transition-colors"
+                        className="flex-1 bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-3 py-2 rounded text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                       >
                         Add Stock
                       </button>
                       <button
                         onClick={() => onReduceStock(item)}
-                        className="flex-1 bg-amber-600 text-white px-3 py-2 rounded text-sm hover:bg-amber-700 transition-colors"
+                        className="flex-1 bg-[#b85c57] hover:bg-[#a54c47] text-white px-3 py-2 rounded text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                       >
                         Reduce Stock
                       </button>
@@ -177,8 +177,10 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
       </div>
 
       {/* Desktop Table View for larger screens */}
-      <table className="w-full border-collapse hidden sm:table">
-        <thead className="bg-green-700 text-white">
+      <div className="hidden sm:flex flex-col h-full overflow-hidden">
+        <div className="overflow-auto flex-1">
+          <table className="w-full border-collapse">
+        <thead className="bg-[#8a9b6e] text-white">
           <tr>
             {viewMode === 'consolidated' ? (
               <>
@@ -230,7 +232,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
                     <div className="flex flex-col lg:flex-row gap-1 lg:gap-2">
                       <button
                         onClick={() => onIncreaseStock(item)}
-                        className="bg-green-700 text-white px-2 lg:px-3 py-1 rounded text-xs lg:text-sm hover:bg-green-800 transition-colors whitespace-nowrap"
+                        className="bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-2 lg:px-3 py-1 rounded text-xs lg:text-sm transition-all duration-200 whitespace-nowrap shadow-md hover:shadow-lg"
                       >
                         Add
                       </button>
@@ -279,7 +281,9 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
             )
           )}
         </tbody>
-      </table>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };

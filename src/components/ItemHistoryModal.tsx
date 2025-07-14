@@ -44,7 +44,7 @@ const ItemHistoryModal: React.FC<ItemHistoryModalProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-green-700 text-white">
+              <tr className="bg-[#8a9b6e] text-white">
                 <th className="p-3 text-left">Date</th>
                 <th className="p-3 text-left">Quantity Change</th>
                 <th className="p-3 text-left">Harvest/Produced Date</th>
@@ -89,7 +89,7 @@ const ItemHistoryModal: React.FC<ItemHistoryModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg transition-colors"
+            className="w-full bg-[#b85c57] hover:bg-[#a54c47] text-white py-2 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
           >
             Close
           </button>

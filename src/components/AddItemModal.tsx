@@ -400,14 +400,14 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ categories, onClose, onAddI
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-green-700 hover:bg-green-800 text-white py-2 sm:py-2 px-4 rounded-lg transition-colors text-sm sm:text-base"
+                className="w-full bg-[#8a9b6e] hover:bg-[#7a8b5e] disabled:bg-gray-400 text-white py-2 sm:py-2 px-4 rounded-lg transition-all duration-200 text-sm sm:text-base shadow-md hover:shadow-lg disabled:shadow-none"
               >
                 {isSubmitting ? "Adding..." : "Add Item"}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 sm:py-2 px-4 rounded-lg transition-colors text-sm sm:text-base"
+                className="w-full mt-2 bg-[#b85c57] hover:bg-[#a54c47] text-white py-2 sm:py-2 px-4 rounded-lg transition-all duration-200 text-sm sm:text-base shadow-md hover:shadow-lg"
               >
                 Cancel
               </button>

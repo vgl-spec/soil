@@ -1,8 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/api";
+import { showToast } from "../utils/toastUtils";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  isSupervisor?: boolean;
+  onMenuAction?: (action: 'addOperator' | 'deleteAccounts' | 'accounts' | 'analytics' | 'changePassword') => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ isSupervisor = false, onMenuAction }) => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -35,6 +41,7 @@ const Header: React.FC = () => {
       // Always clear localStorage and navigate, even if API call fails
       localStorage.removeItem("user");
       sessionStorage.removeItem("user");
+      showToast.success("Logged Out", "You have been successfully logged out");
       navigate("/");
     }
   };
@@ -54,8 +61,8 @@ const Header: React.FC = () => {
           {/* Responsive title that adapts to available space */}
           <h1 className="text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-white ml-1 sm:ml-2 lg:ml-4 flex-1 min-w-0 truncate">
             <span className="hidden md:inline">BRGY TALIPAPA URBAN FARM AND MRF INVENTORY</span>
-            <span className="hidden sm:inline md:hidden">TALIPAPA FARM INVENTORY</span>
-            <span className="sm:hidden">FARM INV</span>
+            <span className="hidden sm:inline md:hidden">BRGY TALIPAPA FARM INVENTORY</span>
+            <span className="sm:hidden">BRGY TALIPAPA INVENTORY</span>
           </h1>
           
           <div className="ml-auto relative">
@@ -67,7 +74,56 @@ const Header: React.FC = () => {
               <span className="sm:hidden">☰</span>
             </button>
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-32 sm:w-48 bg-white text-black rounded shadow-md z-50">
+              <div className="absolute right-0 mt-2 w-48 sm:w-56 bg-white text-black rounded shadow-md z-50">
+                {isSupervisor && (
+                  <>
+                    <button
+                      onClick={() => {
+                        onMenuAction?.('addOperator');
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-100 text-sm sm:text-base border-b border-gray-200"
+                    >
+                      Add New Operator
+                    </button>
+                    <button
+                      onClick={() => {
+                        onMenuAction?.('deleteAccounts');
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-100 text-sm sm:text-base border-b border-gray-200"
+                    >
+                      Delete Accounts
+                    </button>
+                    <button
+                      onClick={() => {
+                        onMenuAction?.('accounts');
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-100 text-sm sm:text-base border-b border-gray-200"
+                    >
+                      Account Details
+                    </button>
+                    <button
+                      onClick={() => {
+                        onMenuAction?.('analytics');
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-100 text-sm sm:text-base border-b border-gray-200"
+                    >
+                      Website Analytics
+                    </button>
+                    <button
+                      onClick={() => {
+                        onMenuAction?.('changePassword');
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-100 text-sm sm:text-base border-b border-gray-200"
+                    >
+                      Change Password
+                    </button>
+                  </>
+                )}
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-100 text-sm sm:text-base"

@@ -8,8 +8,54 @@ const Toast = Swal.mixin({
   timer: 3000,
   timerProgressBar: true,
   didOpen: (toast) => {
+    // Add hardware acceleration for mobile
+    toast.style.transform = 'translate3d(0, 0, 0)';
+    toast.style.backfaceVisibility = 'hidden';
+    toast.style.perspective = '1000px';
+    
+    // Ensure proper positioning on mobile
+    if (window.innerWidth <= 768) {
+      toast.style.right = '0.5rem';
+      toast.style.top = '1rem';
+      toast.style.zIndex = '9999';
+    }
+    
     toast.addEventListener('mouseenter', Swal.stopTimer);
     toast.addEventListener('mouseleave', Swal.resumeTimer);
+    
+    // Touch events for mobile
+    toast.addEventListener('touchstart', () => {
+      Swal.stopTimer();
+    });
+    
+    toast.addEventListener('touchend', () => {
+      setTimeout(() => {
+        Swal.resumeTimer();
+      }, 1000);
+    });
+    
+    // Make toast dismissible by clicking anywhere on screen
+    const handleGlobalClick = (e: Event) => {
+      // Don't close if clicking on the toast itself
+      if (!toast.contains(e.target as Node)) {
+        Swal.close();
+        document.removeEventListener('click', handleGlobalClick);
+        document.removeEventListener('touchend', handleGlobalClick);
+      }
+    };
+    
+    // Add global click and touch listeners after a small delay
+    setTimeout(() => {
+      document.addEventListener('click', handleGlobalClick);
+      document.addEventListener('touchend', handleGlobalClick);
+    }, 100);
+  },
+  willClose: () => {
+    // Smooth exit animation
+    const popup = document.querySelector('.swal2-popup.animated-toast');
+    if (popup) {
+      popup.classList.add('swal2-hide');
+    }
   },
   customClass: {
     popup: 'animated-toast',
@@ -73,6 +119,75 @@ const toastAnimations = `
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
+    min-width: 280px;
+    max-width: 90vw;
+    margin: 0.5rem;
+  }
+  
+  /* Mobile specific improvements */
+  @media (max-width: 768px) {
+    .animated-toast {
+      animation: slideInRight 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+      transform: translateZ(0);
+      will-change: transform, opacity;
+      /* Ensure proper positioning on mobile */
+      position: fixed !important;
+      top: env(safe-area-inset-top, 1rem) !important;
+      right: 1rem !important;
+      left: auto !important;
+      width: calc(100vw - 2rem) !important;
+      max-width: 400px !important;
+    }
+    
+    .animated-toast.swal2-show {
+      animation: slideInRight 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+    }
+    
+    .animated-toast.swal2-hide {
+      animation: slideOutRight 0.25s cubic-bezier(0.4, 0.0, 1, 1) forwards;
+    }
+    
+    .swal2-popup.animated-toast {
+      min-width: 260px;
+      max-width: 85vw;
+      margin: 0.75rem;
+      padding: 1rem;
+      font-size: 14px;
+    }
+    
+    .toast-title {
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    
+    .swal2-content {
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    
+    .toast-icon {
+      width: 2rem !important;
+      height: 2rem !important;
+      animation: pulse 0.5s ease-in-out;
+    }
+  }
+  
+  /* Very small screens */
+  @media (max-width: 480px) {
+    .swal2-popup.animated-toast {
+      min-width: 240px;
+      max-width: 90vw;
+      margin: 0.5rem;
+      padding: 0.875rem;
+    }
+    
+    .toast-title {
+      font-size: 12px;
+    }
+    
+    .swal2-content {
+      font-size: 11px;
+    }
   }
 `;
 

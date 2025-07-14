@@ -84,4 +84,5 @@ export interface SummaryData {
   totalItems: number;
   totalQuantity: number;
   avgStock: number;
+  unit?: string;
 }

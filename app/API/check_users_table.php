@@ -11,19 +11,22 @@ try {
         throw new Exception("Database connection failed");
     }
 
-    // Fetch all users (excluding sensitive data like passwords)
-    $query = "SELECT id, username, email, contact, subdivision, role FROM users ORDER BY username ASC";
+    // Get table structure (PostgreSQL syntax)
+    $query = "SELECT column_name, data_type, is_nullable, column_default 
+              FROM information_schema.columns 
+              WHERE table_name = 'users' 
+              ORDER BY ordinal_position";
     $stmt = $conn->prepare($query);
     $stmt->execute();
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([
         'success' => true,
-        'data' => $users
+        'columns' => $columns
     ]);
 
 } catch (Exception $e) {
-    error_log("API Error in users.php: " . $e->getMessage());
+    error_log("API Error in check_users_table.php: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false, 

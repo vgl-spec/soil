@@ -11,7 +11,7 @@ import ReportView from "../components/ReportView";
 import { ConsolidatedItem, HistoryEntry, Category, ViewMode } from "../types";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
-import { showToast, showConfirmation } from "../utils/toastUtils";
+import { showToast } from "../utils/toastUtils";
 
 const OperatorDashboard: React.FC = () => {
   console.log("OperatorDashboard component loaded");
@@ -34,9 +34,26 @@ const OperatorDashboard: React.FC = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [selectedDateRange, setSelectedDateRange] = useState<string>("all"); // "all", "today", "7d", etc.
   const [showFilters, setShowFilters] = useState<boolean>(false); // Control filter visibility
+  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true); // Track initial loading state
+  const [categoriesLoaded, setCategoriesLoaded] = useState<boolean>(false);
+  const [itemsLoaded, setItemsLoaded] = useState<boolean>(false);
+
+  // Check if all data is loaded and close loading dialog
+  useEffect(() => {
+    if (categoriesLoaded && itemsLoaded && isInitialLoading) {
+      showToast.close();
+      setIsInitialLoading(false);
+    }
+  }, [categoriesLoaded, itemsLoaded, isInitialLoading]);
+
   // Fetch categories
   useEffect(() => {
     const fetchData = async () => {
+      // Show loading toast at the start only once
+      if (isInitialLoading) {
+        showToast.loading("Loading categories and inventory...");
+      }
+      
       try {
         console.log("Fetching categories from:", `${API_BASE_URL}/categories.php`);
         const res = await axios.get(`${API_BASE_URL}/categories.php`, {
@@ -47,6 +64,7 @@ const OperatorDashboard: React.FC = () => {
         const json = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
         console.log("Loaded categories:", json);
         setCategories(json);
+        setCategoriesLoaded(true);
       } catch (error) {
         console.error("❌ Failed to load categories:", error);
         if (axios.isAxiosError(error)) {
@@ -60,8 +78,15 @@ const OperatorDashboard: React.FC = () => {
             console.error("Endpoint not found - check if server is deployed correctly");
           }
         }
+        
+        // Close loading dialog and show error
+        showToast.close();
+        showToast.error("Failed to Load Categories", "Unable to load categories. Some features may not work properly.");
+        setIsInitialLoading(false);
+        
         // Set empty categories as fallback
         setCategories({});
+        setCategoriesLoaded(true);
       }
     };
     fetchData();
@@ -69,8 +94,6 @@ const OperatorDashboard: React.FC = () => {
 
   // Fetch items and history from backend
   const fetchItems = async () => {
-    showToast.loading("Loading inventory...");
-    
     try {
       console.log("Fetching items from:", `${API_BASE_URL}/items.php`);
       const res = await axios.get(`${API_BASE_URL}/items.php`, {
@@ -121,12 +144,9 @@ const OperatorDashboard: React.FC = () => {
         
         setConsolidatedItems(itemsWithDates);
         setHistoryEntries(Array.isArray(data.history) ? data.history : []);
-        
-        showToast.close();
-        showToast.success("Inventory loaded successfully!", `Found ${itemsWithDates.length} items`);
+        setItemsLoaded(true);
       }
     } catch (error) {
-      showToast.close();
       console.error("❌ Failed to load items:", error);
       
       if (axios.isAxiosError(error)) {
@@ -135,6 +155,7 @@ const OperatorDashboard: React.FC = () => {
         console.error("Items - Data:", error.response?.data);
         
         if (error.code === 'ECONNABORTED') {
+          showToast.close();
           showToast.error("Request timeout", "Server might be sleeping. Please try again.");
         } else if (error.response?.status === 404) {
           showToast.error("Endpoint not found", "Check if server is deployed correctly.");
@@ -303,26 +324,26 @@ const OperatorDashboard: React.FC = () => {
   }, [selectedCategory, selectedSubcategory, categories, consolidatedItems, filteredConsolidatedItems, selectedDateRange, searchQuery]);
 
   return (
-    <div className="h-screen w-screen bg-black bg-opacity-40 flex items-center justify-center p-1 sm:p-2">
-      <div className="w-full h-full max-w-screen-xl bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col overflow-hidden">
+    <div className="h-screen w-screen bg-black bg-opacity-40 flex items-center justify-center p-0">
+      <div className="w-full h-full bg-white bg-opacity-60 backdrop-blur-lg flex flex-col overflow-hidden">
         <div
-          className="absolute inset-0 rounded-lg"
-          style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
+          className="absolute inset-0"
+          style={{ background: "rgba(255, 255, 255, 0.45)", zIndex: 0, backdropFilter: "blur(8px)" }}
           aria-hidden="true"
         />
 
         <div className="relative z-10 flex flex-col h-full">
           <Header />
-          <main className="flex-1 p-2 sm:p-4 lg:p-6 flex flex-col min-h-0 overflow-hidden">
+          <main className="flex-1 p-2 sm:p-4 lg:p-6 bg-white bg-opacity-80 backdrop-blur-sm flex flex-col min-h-0 overflow-hidden">
 
             {/* Compact header with action buttons */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-3 gap-2">
-              <h2 className="text-lg sm:text-xl font-bold">Operator Dashboard</h2>
+            <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
+              <h2 className="text-lg sm:text-xl font-bold text-[#8a9b6e]">Operator Dashboard</h2>
               
               {/* Compact action buttons */}
               <div className="flex flex-wrap gap-1 sm:gap-2">
                 <button
-                  className="bg-green-600 hover:bg-green-700 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-colors whitespace-nowrap"
+                  className="bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-all duration-200 whitespace-nowrap shadow-md hover:shadow-lg"
                   onClick={() => {
                     setShowAddModal(true);
                     showToast.info("Add Item", "Opening add item form...");
@@ -331,16 +352,15 @@ const OperatorDashboard: React.FC = () => {
                   + Add
                 </button>
                 <button
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-colors whitespace-nowrap"
+                  className="bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-all duration-200 whitespace-nowrap shadow-md hover:shadow-lg"
                   onClick={() => {
                     setShowCategoryModal(true);
-                    showToast.info("Categories", "Opening category management...");
                   }}
                 >
                   Categories
                 </button>
                 <button
-                  className="bg-yellow-600 hover:bg-yellow-700 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-colors whitespace-nowrap"
+                  className="bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm transition-all duration-200 whitespace-nowrap shadow-md hover:shadow-lg"
                   onClick={() => {
                     setShowReportView(!showReportView);
                     showToast.info(
@@ -468,22 +488,20 @@ const OperatorDashboard: React.FC = () => {
                 <div className="mb-2 flex gap-1">
                   <button
                     className={`px-3 py-1.5 rounded text-sm transition-all duration-300 ${
-                      viewMode === "consolidated" ? "bg-green-700 text-white shadow-md" : "bg-white border hover:bg-green-50"
+                      viewMode === "consolidated" ? "bg-[#8a9b6e] text-white shadow-md" : "bg-white border hover:bg-[#8a9b6e] hover:text-white"
                     }`}
                     onClick={() => {
                       setViewMode("consolidated");
-                      showToast.info("Consolidated View", "Showing aggregated inventory data");
                     }}
                   >
                     Consolidated
                   </button>
                   <button
                     className={`px-3 py-1.5 rounded text-sm transition-all duration-300 ${
-                      viewMode === "history" ? "bg-green-700 text-white shadow-md" : "bg-white border hover:bg-green-50"
+                      viewMode === "history" ? "bg-[#8a9b6e] text-white shadow-md" : "bg-white border hover:bg-[#8a9b6e] hover:text-white"
                     }`}
                     onClick={() => {
                       setViewMode("history");
-                      showToast.info("History View", "Showing detailed transaction history");
                     }}
                   >
                     History
@@ -521,7 +539,6 @@ const OperatorDashboard: React.FC = () => {
             categories={categories}
             onClose={() => {
               setShowAddModal(false);
-              showToast.warning("Add Item Cancelled", "Item was not added to inventory");
             }}
             onAddItem={() => {
               setShowAddModal(false);
@@ -554,7 +571,6 @@ const OperatorDashboard: React.FC = () => {
             item={selectedItem}
             onClose={() => {
               setShowReduceModal(false);
-              showToast.warning("Stock Reduction Cancelled", "No changes were made to inventory");
             }}
             onReduceStock={() => {
               setShowReduceModal(false);
@@ -571,7 +587,6 @@ const OperatorDashboard: React.FC = () => {
             item={selectedItem}
             onClose={() => {
               setShowIncreaseModal(false);
-              showToast.warning("Stock Increase Cancelled", "No changes were made to inventory");
             }}
             onIncreaseStock={() => {
               setShowIncreaseModal(false);
@@ -590,7 +605,6 @@ const OperatorDashboard: React.FC = () => {
             categories={categories}
             onClose={() => {
               setShowHistoryModal(false);
-              showToast.info("History View Closed", `Finished viewing ${selectedItem.name} history`);
             }}
           />
         </div>

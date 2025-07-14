@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { X, Download, ArrowLeft } from 'lucide-react';
+import { Download, ArrowLeft } from 'lucide-react';
 import { HistoryEntry, Category, ChartData, SummaryData } from '../types';
 import { getConsolidatedInventory, formatDate } from '../utils/inventoryUtils';
 import { showToast } from '../utils/toastUtils';
@@ -39,12 +39,40 @@ const ReportView: React.FC<ReportViewProps> = ({ historyEntries, categories, onC
         return entryDate >= firstDayOfMonth && entryDate <= lastDayOfMonth;
       });
 
+      // Helper function to find category and subcategory labels by IDs
+      const getCategoryLabels = (mainCategoryId: string | number | null, subcategoryId: string | number) => {
+        // Convert IDs to strings for comparison
+        const mainId = mainCategoryId?.toString();
+        const subId = subcategoryId?.toString();
+
+        // Find main category by ID
+        let mainLabel = 'Unknown';
+        let subLabel = 'Unknown';
+
+        // Search through categories to find matching IDs
+        for (const [, categoryData] of Object.entries(categories)) {
+          if (categoryData.id?.toString() === mainId) {
+            mainLabel = categoryData.label;
+            
+            // Find subcategory by ID
+            for (const [, subData] of Object.entries(categoryData.subcategories)) {
+              if (subData.id?.toString() === subId) {
+                subLabel = subData.label;
+                break;
+              }
+            }
+            break;
+          }
+        }
+
+        return { mainLabel, subLabel };
+      };
+
       // Prepare category chart data
       const categoryDataMap: Record<string, { quantity: number, unit: string }> = {};
 
       consolidatedInventory.forEach(item => {
-        const mainLabel = categories[item.mainCategory]?.label || item.mainCategory;
-        const subLabel = categories[item.mainCategory]?.subcategories[item.subcategory]?.label || item.subcategory;
+        const { mainLabel, subLabel } = getCategoryLabels(item.mainCategory, item.subcategory);
         const key = `${mainLabel} / ${subLabel}`;
 
         if (!categoryDataMap[key]) categoryDataMap[key] = { quantity: 0, unit: item.unit };
@@ -116,11 +144,18 @@ const ReportView: React.FC<ReportViewProps> = ({ historyEntries, categories, onC
       const summaryMap: Record<string, SummaryData> = {};
 
       consolidatedInventory.forEach(item => {
-        const mainLabel = categories[item.mainCategory]?.label || item.mainCategory;
-        const subLabel = categories[item.mainCategory]?.subcategories[item.subcategory]?.label || item.subcategory;
+        const { mainLabel, subLabel } = getCategoryLabels(item.mainCategory, item.subcategory);
         const key = `${mainLabel} / ${subLabel}`;
 
-        if (!summaryMap[key]) summaryMap[key] = { category: key, totalItems: 0, totalQuantity: 0, avgStock: 0 };
+        if (!summaryMap[key]) {
+          summaryMap[key] = { 
+            category: key, 
+            totalItems: 0, 
+            totalQuantity: 0, 
+            avgStock: 0,
+            unit: item.unit || 'pcs'
+          };
+        }
 
         summaryMap[key].totalItems += 1;
         summaryMap[key].totalQuantity += item.quantity;
@@ -209,48 +244,190 @@ const ReportView: React.FC<ReportViewProps> = ({ historyEntries, categories, onC
 
   const downloadReportAsPDF = async () => {
     try {
-      const jsPDF = (await import('jspdf')).default;
-      const html2canvas = (await import('html2canvas')).default;
+      // Dynamic import for jsPDF
+      const { default: jsPDF } = await import('jspdf');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'legal'
+      });
+      
+      // Generate PDF content (same as before but with chart images)
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      let yPosition = 20;
+      
+      // Title
+      pdf.setFontSize(20);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Brgy. Talipapa Farm and MRF', pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 10;
+      
+      pdf.setFontSize(16);
+      pdf.text('Inventory Monthly Report', pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 8;
+      
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      const currentDate = new Date().toLocaleDateString();
+      pdf.text(`Generated on: ${currentDate}`, pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 20;
 
-      const report = document.getElementById('reportContainer');
-      if (!report) return;
-
-      const originalStyles = report.style.cssText;
-      report.style.cssText = "background: white; padding: 20px; width: 800px; max-width: 800px;";
-
-      const canvas = await html2canvas(report, { scale: 1, useCORS: true });
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-
-      if (pdfHeight > pdf.internal.pageSize.getHeight()) {
-        let heightLeft = pdfHeight;
-        let position = 0;
-
-        while (heightLeft >= 0) {
-          pdf.addPage();
-          position -= pdf.internal.pageSize.getHeight();
-          pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-          heightLeft -= pdf.internal.pageSize.getHeight();
+      // Add charts as images
+      const addChartToPDF = async (chartRef: React.RefObject<HTMLCanvasElement>, title: string) => {
+        if (chartRef.current) {
+          const canvas = chartRef.current;
+          const imgData = canvas.toDataURL('image/png');
+          
+          if (yPosition > 300) {
+            pdf.addPage();
+            yPosition = 20;
+          }
+          
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(title, 20, yPosition);
+          yPosition += 8;
+          
+          const imgWidth = 120;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          pdf.addImage(imgData, 'PNG', 20, yPosition, imgWidth, imgHeight);
+          yPosition += imgHeight + 15;
         }
-      }
+      };
 
-      pdf.save("Farm_Inventory_Report.pdf");
-      report.style.cssText = originalStyles;
-    } catch (err) {
-      console.error("PDF Error:", err);
-      showToast.error("PDF Generation Failed", "Failed to generate PDF. Try again.");
+      await addChartToPDF(categoryChartRef, 'Stock Distribution by Category');
+      await addChartToPDF(topItemsChartRef, 'Top 5 Items by Quantity');
+      await addChartToPDF(stockMovementChartRef, 'Stock Movement Trend');
+
+      // Add summary data
+      pdf.addPage();
+      yPosition = 20;
+      
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Inventory Summary Statistics', 20, yPosition);
+      yPosition += 15;
+      
+      const summaryStatsData = [
+        `Total Items: ${totalData.totalItems}`,
+        `Total Quantity: ${totalData.totalQuantity}`,
+        `Average Stock: ${totalData.avgStock.toFixed(1)}`,
+        `Report Period: ${dateRange}`,
+        `Generated on: ${new Date().toLocaleDateString()}`
+      ];
+      
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      summaryStatsData.forEach(line => {
+        pdf.text(line, 20, yPosition);
+        yPosition += 8;
+      });
+
+      // Add detailed inventory table
+      yPosition += 10;
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Category & Subcategory Details', 20, yPosition);
+      yPosition += 10;
+
+      // Table headers
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      const headers = ['Category/Subcategory', 'Items', 'Quantity', 'Unit', 'Avg Stock'];
+      const colWidths = [60, 25, 25, 25, 30];
+      let xPosition = 20;
+      
+      headers.forEach((header, index) => {
+        pdf.text(header, xPosition, yPosition);
+        xPosition += colWidths[index];
+      });
+      yPosition += 8;
+
+      // Table rows
+      pdf.setFont('helvetica', 'normal');
+      summaryData.forEach((item: any) => {
+        if (yPosition > 270) {
+          pdf.addPage();
+          yPosition = 20;
+          
+          // Redraw headers on new page
+          pdf.setFont('helvetica', 'bold');
+          xPosition = 20;
+          headers.forEach((header, index) => {
+            pdf.text(header, xPosition, yPosition);
+            xPosition += colWidths[index];
+          });
+          yPosition += 8;
+          pdf.setFont('helvetica', 'normal');
+        }
+
+        xPosition = 20;
+        const rowData = [
+          item.category || 'N/A',
+          item.totalItems?.toString() || '0',
+          item.totalQuantity?.toString() || '0',
+          item.unit || 'pcs',
+          item.avgStock?.toFixed(1) || '0.0'
+        ];
+
+        rowData.forEach((data, index) => {
+          const text = data.length > 15 ? data.substring(0, 12) + '...' : data;
+          pdf.text(text, xPosition, yPosition);
+          xPosition += colWidths[index];
+        });
+        yPosition += 6;
+      });
+
+      // Add units summary
+      yPosition += 10;
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Summary by Units', 20, yPosition);
+      yPosition += 10;
+
+      // Units summary
+      const unitsSummary = Object.entries(
+        summaryData.reduce((acc, item) => {
+          const unit = item.unit || 'pcs';
+          if (!acc[unit]) {
+            acc[unit] = { categories: 0, items: 0, quantity: 0 };
+          }
+          acc[unit].categories += 1;
+          acc[unit].items += item.totalItems || 0;
+          acc[unit].quantity += item.totalQuantity || 0;
+          return acc;
+        }, {} as Record<string, { categories: number; items: number; quantity: number }>)
+      );
+
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      unitsSummary.forEach(([unit, data]) => {
+        const percentage = totalData.totalQuantity > 0 ? ((data.quantity / totalData.totalQuantity) * 100).toFixed(1) : '0.0';
+        pdf.text(`${unit}: ${data.quantity} (${percentage}%) - ${data.categories} categories, ${data.items} items`, 20, yPosition);
+        yPosition += 8;
+      });
+
+      // Footer
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'italic');
+      pdf.text(`© ${new Date().getFullYear()} QCU SBIT1F Group 2 | Barangay Talipapa. All rights reserved.`, 
+        pageWidth / 2, pageHeight - 10, { align: 'center' });
+      
+      pdf.save(`Farm_Inventory_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      showToast.success("Report Downloaded", "Inventory Report has been downloaded successfully.");
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showToast.error("Download Failed", "Failed to generate PDF report.");
     }
   };
 
   return (
     <div
       id="reportContainer"
-      className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 relative flex flex-col"
-      style={{ height: "70vh" }} // Fixed height for scroll area
+      className="w-full h-full bg-white rounded-xl shadow-lg p-6 relative flex flex-col overflow-hidden"
     >
       <button
         onClick={onClose}
@@ -268,6 +445,27 @@ const ReportView: React.FC<ReportViewProps> = ({ historyEntries, categories, onC
 
       {/* Scrollable content container */}
       <div className="flex-1 overflow-y-auto space-y-6">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+            <h3 className="text-sm font-medium text-blue-800">Total Items</h3>
+            <p className="text-2xl font-bold text-blue-600">{totalData.totalItems}</p>
+          </div>
+          <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+            <h3 className="text-sm font-medium text-green-800">Total Quantity</h3>
+            <p className="text-2xl font-bold text-green-600">{totalData.totalQuantity}</p>
+          </div>
+          <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+            <h3 className="text-sm font-medium text-purple-800">Avg Stock</h3>
+            <p className="text-2xl font-bold text-purple-600">{totalData.avgStock.toFixed(1)}</p>
+          </div>
+          <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
+            <h3 className="text-sm font-medium text-orange-800">Categories</h3>
+            <p className="text-2xl font-bold text-orange-600">{summaryData.length}</p>
+          </div>
+        </div>
+
+        {/* Charts Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-gray-50 rounded-lg p-4 shadow">
             <h3 className="font-medium text-gray-800 mb-3">Stock Distribution by Category</h3>
@@ -283,44 +481,147 @@ const ReportView: React.FC<ReportViewProps> = ({ historyEntries, categories, onC
           </div>
         </div>
 
-        <div>
-          <div className="bg-gray-50 rounded-lg p-4 shadow mb-6">
-            <h3 className="font-medium text-gray-800 mb-3">Inventory Summary</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-green-700 text-white">
-                    <th className="p-2 text-left">Category</th>
-                    <th className="p-2 text-left">Total Items</th>
-                    <th className="p-2 text-left">Total Quantity</th>
-                    <th className="p-2 text-left">Average Stock</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summaryData.map((s, i) => (
-                    <tr key={i} className="border-b border-gray-200">
-                      <td className="p-2">{s.category}</td>
-                      <td className="p-2">{s.totalItems}</td>
-                      <td className="p-2">{s.totalQuantity}</td>
-                      <td className="p-2">{s.avgStock.toFixed(2)}</td>
-                    </tr>
-                  ))}
-                  <tr className="font-bold bg-gray-100">
-                    <td className="p-2">TOTAL</td>
-                    <td className="p-2">{totalData.totalItems}</td>
-                    <td className="p-2">{totalData.totalQuantity}</td>
-                    <td className="p-2">{totalData.avgStock.toFixed(2)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+        {/* Detailed Category Breakdown */}
+        <div className="bg-white rounded-lg border border-gray-300 shadow">
+          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 rounded-t-lg">
+            <h3 className="text-lg font-semibold text-gray-800">Inventory by Category & Subcategory</h3>
+            <p className="text-sm text-gray-600 mt-1">Detailed breakdown of items organized by category, subcategory, and units</p>
           </div>
+          
+          <div className="p-6">
+            {summaryData.map((categoryData, index) => {
+              // Parse category data to extract main category and subcategory
+              const [mainCategory, subCategory] = categoryData.category ? categoryData.category.split(' / ') : ['Unknown', 'Unknown'];
+              
+              return (
+                <div key={index} className="mb-6 last:mb-0">
+                  {/* Category Header */}
+                  <div className="bg-gradient-to-r from-[#8a9b6e] via-[#d4a762] to-[#6b8c85] shadow-md text-white border border-green-200 rounded-lg p-4 mb-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex-1">
+                        <h4 className="text-lg font-semibold">{mainCategory}</h4>
+                        <p className="text-sm mt-1">Subcategory: {subCategory}</p>
+                      </div>
+                      <div className="flex gap-6 text-sm">
+                        <div className="text-center">
+                          <p className="text-white-800 font-medium">{categoryData.totalItems || 0}</p>
+                          <p className="text-white-600">Items</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-white-800 font-medium">{categoryData.totalQuantity || 0}</p>
+                          <p className="text-white-600">Total Qty</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-white-800 font-medium">{categoryData.unit || 'pcs'}</p>
+                          <p className="text-white-600">Unit</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-          <div className="bg-gray-50 rounded-lg p-4 shadow">
-            <h3 className="font-medium text-gray-800 mb-3">Stock Movement (Current Month)</h3>
-            <div className="h-64">
-              <canvas ref={stockMovementChartRef}></canvas>
-            </div>
+                  {/* Individual Items in this Category */}
+                  <div className="bg-gray-50 rounded-lg p-4 ml-4">
+                    <h5 className="text-sm font-medium text-gray-700 mb-3">Items in this category:</h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {/* This would need item-level data - for now showing category summary */}
+                      <div className="bg-white border border-gray-200 rounded-lg p-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-800">{categoryData.category}</p>
+                            <p className="text-xs text-gray-500 mt-1">Category Summary</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-gray-900">{categoryData.totalQuantity}</p>
+                            <p className="text-xs text-gray-500">{categoryData.unit}</p>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex justify-between items-center">
+                          <span className="text-xs text-gray-600">Avg Stock:</span>
+                          <span className="text-xs font-medium text-gray-700">{categoryData.avgStock?.toFixed(1) || '0.0'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            
+            {summaryData.length === 0 && (
+              <div className="text-center text-gray-500 py-8">
+                <p>No inventory data available for this period</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Units Summary Table */}
+        <div className="bg-white rounded-lg border border-gray-300 shadow">
+          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 rounded-t-lg">
+            <h3 className="text-lg font-semibold text-gray-800">Summary by Units</h3>
+            <p className="text-sm text-gray-600 mt-1">Breakdown of inventory quantities by measurement units</p>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-[#8a9b6e] text-white">
+                  <th className="p-3 text-left">Unit Type</th>
+                  <th className="p-3 text-center">Categories</th>
+                  <th className="p-3 text-center">Total Items</th>
+                  <th className="p-3 text-center">Total Quantity</th>
+                  <th className="p-3 text-center">Percentage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* Group by units */}
+                {Object.entries(
+                  summaryData.reduce((acc, item) => {
+                    const unit = item.unit || 'pcs';
+                    if (!acc[unit]) {
+                      acc[unit] = { categories: 0, items: 0, quantity: 0 };
+                    }
+                    acc[unit].categories += 1;
+                    acc[unit].items += item.totalItems || 0;
+                    acc[unit].quantity += item.totalQuantity || 0;
+                    return acc;
+                  }, {} as Record<string, { categories: number; items: number; quantity: number }>)
+                ).map(([unit, data], index) => {
+                  const percentage = totalData.totalQuantity > 0 ? ((data.quantity / totalData.totalQuantity) * 100).toFixed(1) : '0.0';
+                  return (
+                    <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
+                      <td className="p-3 font-medium text-gray-800">{unit}</td>
+                      <td className="p-3 text-center text-gray-600">{data.categories}</td>
+                      <td className="p-3 text-center text-gray-600">{data.items}</td>
+                      <td className="p-3 text-center font-medium text-gray-800">{data.quantity}</td>
+                      <td className="p-3 text-center">
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
+                          {percentage}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+                <tr className="font-bold bg-gray-100 border-t-2 border-gray-300">
+                  <td className="p-3 text-gray-800">TOTAL</td>
+                  <td className="p-3 text-center text-gray-800">{summaryData.length}</td>
+                  <td className="p-3 text-center text-gray-800">{totalData.totalItems}</td>
+                  <td className="p-3 text-center text-gray-800">{totalData.totalQuantity}</td>
+                  <td className="p-3 text-center">
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
+                      100.0%
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Stock Movement Chart */}
+        <div className="bg-gray-50 rounded-lg p-4 shadow">
+          <h3 className="font-medium text-gray-800 mb-3">Stock Movement Trend (Current Month)</h3>
+          <div className="h-64">
+            <canvas ref={stockMovementChartRef}></canvas>
           </div>
         </div>
       </div>
@@ -328,13 +629,13 @@ const ReportView: React.FC<ReportViewProps> = ({ historyEntries, categories, onC
       <div className="flex gap-4 mt-4 flex-shrink-0">
         <button
           onClick={downloadReportAsPDF}
-          className="flex-1 bg-teal-700 hover:bg-teal-800 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2"
+          className="flex-1 bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg"
         >
           <Download className="h-5 w-5" /> Download as PDF
         </button>
         <button
           onClick={onClose}
-          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg"
+          className="flex-1 bg-[#b85c57] hover:bg-[#a54c47] text-white py-2 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
         >
           Close
         </button>

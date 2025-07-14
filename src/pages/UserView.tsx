@@ -93,17 +93,17 @@ const UserView: React.FC = () => {
     }  };
 
   return (
-    <div className="h-screen w-screen bg-black bg-opacity-40 flex items-center justify-center p-1 sm:p-2">
-      <div className="w-full h-full max-w-screen-xl bg-white bg-opacity-60 backdrop-blur-lg rounded-xl shadow-lg flex flex-col overflow-hidden">
+    <div className="h-screen w-screen bg-black bg-opacity-40 flex items-center justify-center p-0">
+      <div className="w-full h-full bg-white bg-opacity-60 backdrop-blur-lg flex flex-col overflow-hidden">
         <div
-          className="absolute inset-0 rounded-lg"
-          style={{ background: "rgba(255, 255, 255, 0.6)", zIndex: 0, backdropFilter: "blur(8px)" }}
+          className="absolute inset-0"
+          style={{ background: "rgba(255, 255, 255, 0.45)", zIndex: 0, backdropFilter: "blur(8px)" }}
           aria-hidden="true"
         />
         <div className="relative z-10 flex flex-col h-full">
           <Header />
-          <main className="flex-1 p-2 sm:p-4 lg:p-6 flex flex-col min-h-0 overflow-hidden">
-            <h2 className="text-lg sm:text-xl font-bold mb-2 sm:mb-4">Inventory Overview</h2>
+          <main className="flex-1 p-2 sm:p-4 lg:p-6 bg-white bg-opacity-80 backdrop-blur-sm flex flex-col min-h-0 overflow-hidden">
+            <h2 className="text-lg sm:text-xl font-bold mb-2 sm:mb-4 text-[#8a9b6e]">Inventory Overview</h2>
             
             {/* Mobile Card View */}
             <div className="block sm:hidden flex-1 overflow-y-auto space-y-3 min-h-0">
@@ -119,7 +119,7 @@ const UserView: React.FC = () => {
                   >
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="font-semibold text-lg text-gray-900">{item.name}</h3>
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
+                      <span className="bg-[#8a9b6e] text-white px-2 py-1 rounded text-sm font-medium shadow-md">
                         {item.quantity} {item.unit}
                       </span>
                     </div>
@@ -140,39 +140,37 @@ const UserView: React.FC = () => {
             </div>
 
             {/* Desktop Table View */}
-            <div className="hidden sm:block flex-1 flex flex-col min-h-0">
-              <table className="w-full border-collapse flex-shrink-0 table-fixed">
-                <thead className="bg-green-700 text-white">
+            <div className="hidden sm:flex flex-1 overflow-auto rounded border border-gray-300 shadow-lg bg-white min-h-0">
+              <table className="w-full border-collapse">
+                <thead className="bg-[#8a9b6e] text-white">
                   <tr>
-                    <th className="p-2 sm:p-3 text-left w-1/4 text-sm sm:text-base">Item Name</th>
-                    <th className="p-2 sm:p-3 text-left w-1/4 text-sm sm:text-base">Category</th>
-                    <th className="p-2 sm:p-3 text-left w-1/4 text-sm sm:text-base">Current Stock</th>
-                    <th className="p-2 sm:p-3 text-left w-1/4 text-sm sm:text-base">Recent Procured Date</th>
+                    <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Item Name</th>
+                    <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Category</th>
+                    <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Current Stock</th>
+                    <th className="p-2 sm:p-3 text-left text-xs sm:text-sm">Recent Procured Date</th>
                   </tr>
                 </thead>
-              </table>
-              <div className="overflow-y-auto flex-1 bg-white rounded border border-gray-300 min-h-0">
-                <table className="w-full border-collapse table-fixed">
-                  <tbody>
-                    {items.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="p-4 text-center text-gray-500 border border-gray-200">
-                          No items found
+                <tbody>
+                  {items.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="p-4 text-center text-gray-500 border border-gray-200">
+                        No items found
+                      </td>
+                    </tr>
+                  ) : (
+                    items.map((item) => (
+                      <tr key={`item-${item.id}-${item.predefined_item_id}`} className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="p-2 sm:p-3 text-xs sm:text-sm">{item.name}</td>
+                        <td className="p-2 sm:p-3 text-xs sm:text-sm">{getCategoryLabel(categories, item.mainCategory, item.subcategory)}</td>
+                        <td className="p-2 sm:p-3 text-xs sm:text-sm">
+                          <span className="font-medium">{item.quantity} {item.unit}</span>
                         </td>
+                        <td className="p-2 sm:p-3 text-xs sm:text-sm">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</td>
                       </tr>
-                    ) : (
-                      items.map((item) => (
-                        <tr key={`item-${item.id}-${item.predefined_item_id}`} className="border-b border-gray-200 hover:bg-gray-50">
-                          <td className="p-2 sm:p-3 w-1/4 text-sm sm:text-base">{item.name}</td>
-                          <td className="p-2 sm:p-3 w-1/4 text-sm sm:text-base">{getCategoryLabel(categories, item.mainCategory, item.subcategory)}</td>
-                          <td className="p-2 sm:p-3 font-medium w-1/4 text-sm sm:text-base">{item.quantity} {item.unit}</td>
-                          <td className="p-2 sm:p-3 w-1/4 text-sm sm:text-base">{item.harvestDate ? formatDate(item.harvestDate) : "-"}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </main>
           <Footer />

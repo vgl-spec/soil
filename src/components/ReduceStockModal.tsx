@@ -159,14 +159,14 @@ const ReduceStockModal: React.FC<ReduceStockModalProps> = ({ item, onClose, onRe
             <div className="pt-3 sm:pt-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
               <button
                 type="submit"
-                className="w-full sm:flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors text-sm sm:text-base"
+                className="w-full sm:flex-1 bg-[#b85c57] hover:bg-[#a54c47] text-white py-2 px-4 rounded-lg transition-all duration-200 text-sm sm:text-base shadow-md hover:shadow-lg"
               >
                 Reduce Stock
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full sm:flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg transition-colors text-sm sm:text-base"
+                className="w-full sm:flex-1 bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white py-2 px-4 rounded-lg transition-all duration-200 text-sm sm:text-base shadow-md hover:shadow-lg"
               >
                 Cancel
               </button>
