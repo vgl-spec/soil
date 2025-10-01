@@ -427,7 +427,7 @@ const SupervisorDashboard: React.FC = () => {
                       className="bg-[#8a9b6e] hover:bg-[#7a8b5e] text-white px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1 whitespace-nowrap shadow-md hover:shadow-lg"
                     >
                       <span className="hidden sm:inline">Inventory Report</span>
-                      <span className="sm:hidden">Inventory Report</span>
+                      <span className="sm:hidden">Report</span>
                     </button>
                   </div>
                 </div>

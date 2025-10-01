@@ -5,10 +5,11 @@ import { showToast } from "../utils/toastUtils";
 
 interface HeaderProps {
   isSupervisor?: boolean;
+  isOperator?: boolean;
   onMenuAction?: (action: 'addOperator' | 'deleteAccounts' | 'accounts' | 'analytics' | 'changePassword') => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ isSupervisor = false, onMenuAction }) => {
+const Header: React.FC<HeaderProps> = ({ isSupervisor = false, isOperator = false, onMenuAction }) => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -86,6 +87,10 @@ const Header: React.FC<HeaderProps> = ({ isSupervisor = false, onMenuAction }) =
                     >
                       Add New Operator
                     </button>
+                  </>
+                )}
+                {(isSupervisor || isOperator) && (
+                  <>
                     <button
                       onClick={() => {
                         onMenuAction?.('deleteAccounts');

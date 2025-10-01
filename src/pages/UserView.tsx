@@ -5,10 +5,19 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { ConsolidatedItem, Category } from "../types";
 import { getCategoryLabel } from "../utils/inventoryUtils";
+import { showToast } from "../utils/toastUtils";
 
 const UserView: React.FC = () => {
   const [items, setItems] = useState<ConsolidatedItem[]>([]);
   const [categories, setCategories] = useState<Category>({});
+
+  // Show welcome notification on component mount
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.username) {
+      showToast.success("Welcome", `Welcome, ${user.username}!`);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -17,7 +26,7 @@ const UserView: React.FC = () => {
         const json = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
         setCategories(json);
       } catch (error) {
-        console.error("❌ Failed to load categories:", error);
+        console.error("Failed to load categories:", error);
       }
     };
     fetchCategories();
@@ -73,7 +82,7 @@ const UserView: React.FC = () => {
           setItems(itemsWithDates);
         }
       } catch (error) {
-        console.error("❌ Failed to load items:", error);
+        console.error("Failed to load items:", error);
         setItems([]);
       }
     };

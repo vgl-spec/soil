@@ -5,16 +5,11 @@ import { API_BASE_URL } from "../config/api";
 // TODO: These functions will be updated to make API calls instead of direct database access
 
 export const saveHistoryEntries = async (): Promise<void> => {
-  console.warn(
-    "Database operations moved to backend API - saveHistoryEntries not implemented"
-  );
+  // Backend API handles database operations
 };
 
-export const saveCategories = async (categories: Category): Promise<void> => {
-  console.warn(
-    "Database operations moved to backend API - saveCategories not implemented"
-  );
-  console.log("Received categories:", categories); // Log the categories for now
+export const saveCategories = async (_categories: Category): Promise<void> => {
+  // Backend API handles database operations
 };
 
 // Dynamic helper functions to get category and subcategory IDs from the categories object
@@ -60,20 +55,16 @@ export const getCategoryLabel = (categories: Category, mainCategoryId: string | 
   
   // Handle case where categories isn't loaded yet
   if (!categories || Object.keys(categories).length === 0) {
-    console.log('Categories not loaded yet');
     return `Loading...`;
   }
   
   // If mainCategoryId is null, try to find it by looking through subcategories
   if (mainCategoryId === null || mainCategoryId === undefined) {
-    console.log('mainCategoryId is null, searching by subcategory ID:', subcategoryId);
-    
     // Search through all categories to find which one contains this subcategory
     for (const [categoryName, categoryData] of Object.entries(categories)) {
       if (categoryData.subcategories) {
         for (const [subName, subData] of Object.entries(categoryData.subcategories)) {
           if (subData.id === Number(subcategoryId)) {
-            console.log(`Found subcategory ${subcategoryId} in category ${categoryName}`);
             const mainLabel = categoryData.label || categoryName;
             const subLabel = subData.label || subName;
             return `${mainLabel}/${subLabel}`;
@@ -81,27 +72,22 @@ export const getCategoryLabel = (categories: Category, mainCategoryId: string | 
         }
       }
     }
-    console.log('Could not find subcategory', subcategoryId, 'in any category');
     return `Unknown/${subcategoryId}`;
   }
   
   // Try to find category by ID (original logic)
   const categoryName = getCategoryNameById(categories, Number(mainCategoryId));
-  console.log('Found categoryName:', categoryName);
   
   if (categoryName) {
     const subcategoryName = getSubcategoryNameById(categories, categoryName, Number(subcategoryId));
-    console.log('Found subcategoryName:', subcategoryName);
     
     const mainLabel = categories[categoryName]?.label || categoryName;
     const subLabel = subcategoryName ? categories[categoryName]?.subcategories?.[subcategoryName]?.label || subcategoryName : subcategoryId;
-    console.log('Labels:', { mainLabel, subLabel });
     
     return `${mainLabel}/${subLabel}`;
   }
   
   // If category not found, might be due to data structure issues
-  console.log('Category not found - available categories:', Object.keys(categories));
   return `Unknown (${mainCategoryId}/${subcategoryId})`;
 };
 
@@ -119,8 +105,6 @@ export const checkItemExists = async (
 
     // Ensure IDs are valid before proceeding
     if (mainCategoryId && subcategoryId) {
-      console.log("Sending parameters: ", { name, mainCategoryId, subcategoryId });
-
       // Make the API request with numeric IDs for main_category_id and subcategory_id
       const response = await axios.get(`${API_BASE_URL}/check_item_exists.php`, {
         params: {
@@ -137,35 +121,18 @@ export const checkItemExists = async (
         return null; // Return null if the item doesn't exist
       }
     } else {
-      console.error("Invalid category or subcategory", { 
-        mainCategoryString, 
-        subcategoryString, 
-        mainCategoryId, 
-        subcategoryId,
-        availableCategories: Object.keys(categories)
-      });
       return null; // Invalid category/subcategory
     }
   } catch (error) {
     console.error("Error checking if item exists:", error);
-    if (axios.isAxiosError(error)) {
-      console.error('Network Error:', error.message);
-      if (error.response) {
-        console.log('Response Error:', error.response);
-      }
-    }
     return null; // Return null if there's an error
   }
 };
 
-console.log('Response Error:', 2);
-
 export const updateCategoriesFormat = async (
   baseCategories: Category
 ): Promise<Category> => {
-  console.warn(
-    "Database operations moved to backend API - updateCategoriesFormat not implemented"
-  );
+  // Backend API handles database operations
   return baseCategories;
 };
 
